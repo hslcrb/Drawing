@@ -57,6 +57,11 @@ test("Electron edits, saves, reopens SVG and resets save path for a new document
     await page.screenshot({ path: "test-results/desktop.png" });
   } finally {
     await app.close();
+    if (
+      path.dirname(path.resolve(directory)) !== path.resolve(os.tmpdir()) ||
+      !path.basename(directory).startsWith("drawing-test-")
+    )
+      throw new Error("Unexpected temporary directory");
     await fs.rm(directory, { recursive: true, force: true });
   }
 });

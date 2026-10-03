@@ -116,13 +116,15 @@ function Field({
         min={min}
         step={step}
         onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => {
-          if (draft !== String(value)) onCommit(draft);
+        onBlur={(event) => {
+          const current = event.currentTarget.value;
+          if (current !== String(value)) onCommit(current);
           setDraft(String(value));
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
           if (e.key === "Escape") {
+            e.currentTarget.value = String(value);
             setDraft(String(value));
             e.currentTarget.blur();
           }

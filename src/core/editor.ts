@@ -391,6 +391,8 @@ export class SvgEditor {
     return result;
   }
   setStyle(property: string, value: string) {
+    if (property === "font-size" && /^\d+(?:\.\d+)?$/.test(value))
+      value += "px";
     if (!CSS.supports(property, value))
       throw new Error("유효한 색상 또는 속성 값을 입력하세요.");
     this.command("속성 변경", () =>

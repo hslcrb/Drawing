@@ -1,5 +1,81 @@
 import { test, expect } from "@playwright/test";
 
+test("Escape cancels a draft property without changing artwork", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const board = page.getByTestId("artboard");
+  const b = (await board.boundingBox())!;
+  await page.getByRole("button", { name: "사각형 (R)", exact: true }).click();
+  await page.mouse.move(b.x + 80, b.y + 80);
+  await page.mouse.down();
+  await page.mouse.move(b.x + 150, b.y + 130);
+  await page.mouse.up();
+  await page
+    .getByRole("textbox", { name: "Fill", exact: true })
+    .fill("#00ff00");
+  await page.keyboard.press("Escape");
+  await expect(board.locator("rect")).toHaveAttribute("fill", "#8b75ff");
+});
+
+test("ellipse and text tools, selection resize handles, numeric styles and grouping", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const board = page.getByTestId("artboard");
+  const b = (await board.boundingBox())!;
+  await page.getByRole("button", { name: "타원 (E)", exact: true }).click();
+  await page.mouse.move(b.x + 90, b.y + 90);
+  await page.mouse.down();
+  await page.mouse.move(b.x + 190, b.y + 170);
+  await page.mouse.up();
+  await expect(board.locator("ellipse")).toHaveCount(1);
+  await page.getByRole("button", { name: "선택 (V)", exact: true }).click();
+  const handle = page.locator('[data-handle="se"]');
+  const h = (await handle.boundingBox())!;
+  const previous = Number(
+    await page.getByRole("textbox", { name: "W", exact: true }).inputValue(),
+  );
+  await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(h.x + h.width / 2 + 50, h.y + h.height / 2 + 40);
+  await page.mouse.up();
+  expect(
+    Number(
+      await page.getByRole("textbox", { name: "W", exact: true }).inputValue(),
+    ),
+  ).toBeGreaterThan(previous + 30);
+  await page
+    .getByRole("textbox", { name: "Fill", exact: true })
+    .fill("#ff0000");
+  await page.keyboard.press("Enter");
+  await expect(board.locator("ellipse")).toHaveAttribute("fill", "#ff0000");
+  await page.getByRole("button", { name: "텍스트 (T)", exact: true }).click();
+  await page.mouse.click(b.x + 300, b.y + 200);
+  await page
+    .getByRole("textbox", { name: "텍스트 내용", exact: true })
+    .fill("SVG text");
+  await page.getByRole("button", { name: "추가", exact: true }).click();
+  await expect(board.locator("text")).toHaveText("SVG text");
+  await page
+    .getByRole("textbox", { name: "글자 크기", exact: true })
+    .fill("48");
+  await page.keyboard.press("Enter");
+  await expect(board.locator("text")).toHaveAttribute("font-size", "48px");
+  await page
+    .getByRole("textbox", { name: "Fill", exact: true })
+    .fill("#00ff00");
+  await page.keyboard.press("Escape");
+  await expect(board.locator("text")).toHaveAttribute("fill", "#ff0000");
+  await page.mouse.click(b.x + 500, b.y + 350);
+  await page.keyboard.press("Control+a");
+  await page.keyboard.press("Control+g");
+  await expect(board.locator(":scope > g")).toHaveCount(1);
+  await page.keyboard.press("Control+Shift+g");
+  await expect(board.locator(":scope > g")).toHaveCount(0);
+  await expect(board.locator("text")).toHaveText("SVG text");
+});
+
 test("transparent cleanup UI preserves painted strokes and undo restores removed artwork", async ({
   page,
 }) => {
