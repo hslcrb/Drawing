@@ -41,6 +41,8 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.txt",
       "package.json",
       "!node_modules/**"
     ],
