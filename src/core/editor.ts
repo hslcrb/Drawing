@@ -252,6 +252,9 @@ export class SvgEditor {
     try {
       action();
       this.ensureIds();
+      this.project.motion.tracks = this.project.motion.tracks.filter(
+        (t) => !!this.svg.querySelector(`[id="${CSS.escape(t.id)}"]`),
+      );
       this.commit(label);
     } catch (error) {
       this.cancel();

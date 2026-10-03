@@ -51,6 +51,8 @@ import welcomeSvg from "../samples/welcome.svg?raw";
 import { defaultView, type ViewState } from "./core/project";
 import { PaintEditor, GradientHandles } from "./PaintEditor";
 import { ResourcePanel } from "./ResourcePanel";
+import { Timeline } from "./Timeline";
+import { previewSvg, animatedSvg } from "./core/motion";
 
 const toolList: {
   id: Tool;
@@ -170,6 +172,7 @@ function App() {
     overlay = useRef<SVGSVGElement>(null),
     viewport = useRef<HTMLDivElement>(null),
     fileInput = useRef<HTMLInputElement>(null);
+  const motionHost = useRef<HTMLDivElement>(null);
   const engine = useRef<SvgEditor | null>(null),
     controller = useRef<Tools | null>(null);
   const [revision, update] = useState(0),
@@ -191,6 +194,7 @@ function App() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [mode, setMode] = useState<"design" | "motion">("design");
   const [time, setTime] = useState(0);
+  const [playing, setPlaying] = useState(false);
   const [paintHandles, setPaintHandles] = useState<"fill" | "stroke" | null>(
     null,
   );
@@ -294,6 +298,7 @@ function App() {
     } else fileInput.current?.click();
   }
   function loadDocument(content: string) {
+    setPlaying(false);
     controller.current?.cancel();
     const view = engine.current!.loadDocument(content);
     if (view) {
@@ -397,6 +402,36 @@ function App() {
   }, [fill, stroke, strokeWidth]);
   useEffect(() => window.desktop?.onSaveRequest(() => save()), [filename]);
   useEffect(() => {
+    controller.current!.enabled = mode === "design";
+    if (mode === "design") setPlaying(false);
+  }, [mode]);
+  useEffect(() => {
+    if (mode === "motion" && engine.current && motionHost.current)
+      motionHost.current.replaceChildren(previewSvg(engine.current, time));
+  }, [mode, time, revision]);
+  useEffect(() => {
+    if (!playing || !engine.current) return;
+    let frame = 0,
+      started = performance.now();
+    const initial = time >= engine.current.project.motion.duration ? 0 : time;
+    const tick = (now: number) => {
+      const motion = engine.current!.project.motion;
+      let t = initial + (now - started) / 1000;
+      if (t >= motion.duration) {
+        if (motion.loop) t %= motion.duration;
+        else {
+          setTime(motion.duration);
+          setPlaying(false);
+          return;
+        }
+      }
+      setTime(Math.floor(t * motion.fps) / motion.fps);
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [playing, mode]);
+  useEffect(() => {
     const key = (ev: KeyboardEvent) => {
       if (
         (ev.target as Element)?.closest(
@@ -406,6 +441,7 @@ function App() {
       )
         return;
       if (!engine.current || !controller.current) return;
+      if (mode === "motion" && !(ev.ctrlKey || ev.metaKey)) return;
       if (controller.current.key(ev)) {
         ev.preventDefault();
         return;
@@ -496,7 +532,7 @@ function App() {
       window.removeEventListener("keydown", key);
       window.removeEventListener("keyup", up);
     };
-  }, [modal, filename]);
+  }, [modal, filename, mode]);
   const common = (property: string) => {
     if (!sel.length) return "";
     const vals = sel.map((el) =>
@@ -620,6 +656,29 @@ function App() {
           </span>
           Drawing<span className="version">SVG STUDIO</span>
         </a>
+        <nav className="mode-switch" aria-label="작업 모드">
+          <button
+            aria-label="디자인 모드"
+            className={mode === "design" ? "active" : ""}
+            onClick={() => {
+              controller.current?.finishPen();
+              setMode("design");
+            }}
+          >
+            디자인
+          </button>
+          <button
+            aria-label="모션 모드"
+            className={mode === "motion" ? "active" : ""}
+            onClick={() => {
+              controller.current?.finishPen();
+              setPaintHandles(null);
+              setMode("motion");
+            }}
+          >
+            모션
+          </button>
+        </nav>
         <div className="header-actions">
           <Button
             label="예제 열기"
@@ -654,12 +713,11 @@ function App() {
             icon={Download}
             onClick={() =>
               void asyncRun(async () => {
-                if (window.desktop) await window.desktop.export(e!.serialize());
+                const svg =
+                  mode === "motion" ? animatedSvg(e!) : e!.serialize();
+                if (window.desktop) await window.desktop.export(svg);
                 else
-                  download(
-                    e!.serialize(),
-                    filename.replace(/\.drawing$/i, "") + ".svg",
-                  );
+                  download(svg, filename.replace(/\.drawing$/i, "") + ".svg");
               })
             }
           >
@@ -753,9 +811,21 @@ function App() {
                   height: (e?.size.height || 640) * zoom,
                 }}
               >
-                <div className="document-host" ref={host} />
-                <svg ref={overlay} className="overlay" />
-                {e && paintHandles && (
+                <div
+                  className={`document-host ${mode === "motion" ? "motion-source" : ""}`}
+                  ref={host}
+                />
+                <div
+                  className="document-host motion-preview"
+                  data-testid="motion-preview"
+                  ref={motionHost}
+                  hidden={mode !== "motion"}
+                />
+                <svg
+                  ref={overlay}
+                  className={`overlay ${mode === "motion" ? "motion-source" : ""}`}
+                />
+                {e && paintHandles && mode === "design" && (
                   <GradientHandles
                     editor={e}
                     property={paintHandles}
@@ -1184,6 +1254,16 @@ function App() {
           </section>
         </aside>
       </main>
+      {e && mode === "motion" && (
+        <Timeline
+          editor={e}
+          time={time}
+          setTime={setTime}
+          playing={playing}
+          setPlaying={setPlaying}
+          run={run}
+        />
+      )}
       <footer>
         <span className="status-dot" />
         <span>{error || e?.status || "준비"}</span>

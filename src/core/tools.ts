@@ -22,6 +22,7 @@ type Drag = {
   scroll?: Vec;
 };
 export class Tools {
+  enabled = true;
   tool: Tool = "select";
   fill = "#8b75ff";
   stroke = "none";
@@ -73,6 +74,7 @@ export class Tools {
     return el instanceof SVGGraphicsElement ? el : null;
   }
   private down = (ev: PointerEvent) => {
+    if (!this.enabled) return;
     if (ev.button !== 0 && ev.button !== 1) return;
     ev.preventDefault();
     this.stage.focus();
@@ -399,6 +401,7 @@ export class Tools {
     this.render();
   }
   key(ev: KeyboardEvent) {
+    if (!this.enabled) return false;
     if (ev.code === "Space") this.space = true;
     if (ev.key === "Escape") {
       this.cancel();
@@ -453,6 +456,7 @@ export class Tools {
     });
   }
   private doubleClick = (ev: MouseEvent) => {
+    if (!this.enabled) return;
     if (this.tool !== "node") return;
     const el = this.hit(ev.target);
     if (!el || el.localName !== "path") return;
