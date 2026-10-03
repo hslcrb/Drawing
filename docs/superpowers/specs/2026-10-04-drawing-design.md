@@ -177,3 +177,21 @@ Delete, 화살표 이동 및 Shift+화살표 큰 이동을 지원한다. Space �
 이 설계 문서 승인 후 구체적인 구현 계획을 작성한다. 구현은 문서·기하 기반,
 기본 화면과 도구, 고급 편집과 투명 정리, 파일·데스크톱 연결, 검증·배포 순으로
 진행한다. 각 단계의 실패를 수정한 후 다음 단계로 이동한다.
+
+## 공식 문서 검토 결과
+
+2026-10-04에 다음 공식 문서를 확인했다. 실제 라이브러리 선정 및 구현 테스트는
+설계 승인 후 진행하며, 아래 확인은 제품 코드가 구현되었다는 의미가 아니다.
+
+- [Paper.js PathItem](https://paperjs.org/reference/pathitem/): unite, subtract,
+  intersect, exclude와 SVG 형식의 pathData를 제공한다. 패스파인더 엔진 후보로
+  적합하다. SVG의 transform, fill-rule 및 결과 스타일 연결은 별도 검증해야 한다.
+- [Electron 보안](https://www.electronjs.org/docs/latest/tutorial/security):
+  renderer와 Node 접근을 분리하는 데스크톱 구조의 기준으로 사용한다.
+- [Electron IPC](https://www.electronjs.org/docs/latest/tutorial/ipc):
+  main과 renderer 사이의 파일 대화상자 및 파일 작업 연결을 설계할 때 사용한다.
+
+설계 검토에서 확인한 주요 경계는 투명 판정 시 SVG 기본 채우기 보존,
+외부 참조 요소 보호, 패스파인더 결과의 원래 위치와 z-order 유지,
+한 번의 드래그를 한 번의 실행 취소로 처리하는 것이다. 구현 계획은 이 항목들을
+독립적인 검증 대상으로 포함해야 한다.
