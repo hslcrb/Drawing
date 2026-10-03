@@ -16,6 +16,7 @@
     "package:dir": "npm run build && electron-builder --win --dir --x64"
   },
   "dependencies": {
+    "hb-subset-wasm": "^0.4.0",
     "lucide-react": "^0.468.0",
     "paper": "^0.12.18",
     "react": "^19.2.0",

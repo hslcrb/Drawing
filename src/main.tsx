@@ -48,6 +48,7 @@ import { SvgEditor, type Vec } from "./core/editor";
 import { Tools, type Tool } from "./core/tools";
 import "./style.css";
 import welcomeSvg from "../samples/welcome.svg?raw";
+import { defaultView, type ViewState } from "./core/project";
 
 const toolList: {
   id: Tool;
@@ -172,7 +173,7 @@ function App() {
   const [revision, update] = useState(0),
     [tool, setTool] = useState<Tool>("select"),
     [zoom, setZoom] = useState(0.8),
-    [filename, setFilename] = useState("Welcome.svg"),
+    [filename, setFilename] = useState("Welcome.drawing"),
     [error, setError] = useState("");
   const [modal, setModal] = useState<"new" | "text" | "rename" | "help" | null>(
       null,
@@ -186,6 +187,22 @@ function App() {
     [stroke, setStroke] = useState("none"),
     [strokeWidth, setStrokeWidth] = useState(2);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [mode, setMode] = useState<"design" | "motion">("design");
+  const [time, setTime] = useState(0);
+  const workspace = useRef<ViewState>(defaultView());
+  workspace.current = {
+    zoom,
+    scrollX: viewport.current?.scrollLeft || 0,
+    scrollY: viewport.current?.scrollTop || 0,
+    mode,
+    tool,
+    selection: engine.current?.ids || [],
+    expanded: [...expanded],
+    fill,
+    stroke,
+    strokeWidth,
+    time,
+  };
   const e = engine.current,
     b = e?.selectionBounds(),
     sel = e?.selected || [];
@@ -236,10 +253,17 @@ function App() {
     const ed = engine.current!;
     controller.current?.finishPen();
     if (window.desktop) {
-      const path = await window.desktop.save(ed.serialize(), saveAs);
+      const path = await window.desktop.save(
+        ed.serializeProject(workspace.current),
+        saveAs,
+      );
       if (!path) return false;
       setFilename(path.split(/[\\/]/).at(-1)!);
-    } else download(ed.serialize(), filename);
+    } else
+      download(
+        ed.serializeProject(workspace.current),
+        filename.replace(/\.(svg|drawing)$/i, "") + ".drawing",
+      );
     ed.markSaved();
     ed.status = "SVG 저장 완료";
     ed.emit();
@@ -258,12 +282,37 @@ function App() {
     if (window.desktop) {
       const file = await window.desktop.open();
       if (file) {
-        engine.current!.load(file.xml);
+        loadDocument(file.xml);
         await window.desktop.opened(file.path);
         setFilename(file.path.split(/[\\/]/).at(-1)!);
-        fit();
       }
     } else fileInput.current?.click();
+  }
+  function loadDocument(content: string) {
+    controller.current?.cancel();
+    const view = engine.current!.loadDocument(content);
+    if (view) {
+      setZoom(view.zoom);
+      setMode(view.mode);
+      setTime(view.time);
+      changeTool(view.tool as Tool);
+      setExpanded(new Set(view.expanded));
+      setFill(view.fill);
+      setStroke(view.stroke);
+      setStrokeWidth(view.strokeWidth);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          if (viewport.current) {
+            viewport.current.scrollLeft = view.scrollX;
+            viewport.current.scrollTop = view.scrollY;
+          }
+        }),
+      );
+    } else {
+      setMode("design");
+      setTime(0);
+      requestAnimationFrame(fit);
+    }
   }
   async function openExample() {
     controller.current?.finishPen();
@@ -271,7 +320,9 @@ function App() {
     controller.current?.cancel();
     engine.current!.load(welcomeSvg);
     await window.desktop?.newDocument();
-    setFilename("Welcome.svg");
+    setFilename("Welcome.drawing");
+    setMode("design");
+    setTime(0);
     requestAnimationFrame(fit);
   }
   async function copy(cut = false) {
@@ -599,7 +650,11 @@ function App() {
             onClick={() =>
               void asyncRun(async () => {
                 if (window.desktop) await window.desktop.export(e!.serialize());
-                else download(e!.serialize(), filename);
+                else
+                  download(
+                    e!.serialize(),
+                    filename.replace(/\.drawing$/i, "") + ".svg",
+                  );
               })
             }
           >
@@ -618,7 +673,7 @@ function App() {
           <span className="file-dot" />
           {filename}
           {e?.dirty && <span className="dirty-dot" />}
-          <span className="doc-format">SVG</span>
+          <span className="doc-format">DRAWING</span>
         </div>
         <span className="document-hint">벡터로 그리고, SVG로 남기세요.</span>
         <div className="history">
@@ -1046,15 +1101,14 @@ function App() {
         hidden
         type="file"
         ref={fileInput}
-        accept=".svg,image/svg+xml"
+        accept=".drawing,.svg,image/svg+xml,application/json"
         onChange={(ev) => {
           const file = ev.target.files?.[0];
           if (file)
             void asyncRun(async () => {
               const xml = await file.text();
-              engine.current!.load(xml);
+              loadDocument(xml);
               setFilename(file.name);
-              fit();
             });
           ev.target.value = "";
         }}
@@ -1132,7 +1186,9 @@ function App() {
                         controller.current!.cancel();
                         engine.current!.newDocument(width, height);
                         await window.desktop?.newDocument();
-                        setFilename("Untitled.svg");
+                        setFilename("Untitled.drawing");
+                        setMode("design");
+                        setTime(0);
                         setModal(null);
                         requestAnimationFrame(fit);
                       }

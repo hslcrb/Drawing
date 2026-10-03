@@ -1,11 +1,18 @@
 import paperCore from "paper/dist/paper-core";
 import type paper from "paper";
+import {
+  emptyProject,
+  defaultView,
+  validateProject,
+  type ProjectData,
+  type ViewState,
+} from "./project";
 
 export const NS = "http://www.w3.org/2000/svg";
 export type Vec = { x: number; y: number };
 export type Box = Vec & { width: number; height: number };
 export type BooleanOp = "unite" | "subtract" | "intersect" | "exclude";
-type Snapshot = { xml: string; selection: string[] };
+type Snapshot = { xml: string; selection: string[]; project: ProjectData };
 type Entry = { before: Snapshot; after: Snapshot; label: string };
 const graphics =
   "path,rect,circle,ellipse,line,polyline,polygon,text,image,use,g";
@@ -43,6 +50,8 @@ export function point(m: DOMMatrix | SVGMatrix, p: Vec): Vec {
 }
 
 export class SvgEditor {
+  project: ProjectData = emptyProject();
+  extensions: Record<string, unknown> = {};
   svg!: SVGSVGElement;
   ids: string[] = [];
   status = "준비";
@@ -69,7 +78,7 @@ export class SvgEditor {
     return this.future.length > 0;
   }
   get dirty() {
-    return this.serialize() !== this.saved;
+    return this.fingerprint() !== this.saved;
   }
   get size(): Box {
     const b = this.svg.viewBox.baseVal;
@@ -136,6 +145,8 @@ export class SvgEditor {
           );
     }
     this.mount(svg);
+    this.project = emptyProject();
+    this.extensions = {};
     this.ids = [];
     this.past = [];
     this.future = [];
@@ -157,12 +168,46 @@ export class SvgEditor {
     clone.removeAttribute("data-testid");
     return new XMLSerializer().serializeToString(clone);
   }
+  private fingerprint() {
+    return this.serialize() + JSON.stringify(this.project);
+  }
+  serializeProject(workspace: ViewState = defaultView()) {
+    return JSON.stringify(
+      {
+        format: "Drawing",
+        version: 1,
+        svg: this.serialize(),
+        resources: this.project,
+        workspace,
+        extensions: this.extensions,
+      },
+      null,
+      2,
+    );
+  }
+  loadDocument(content: string): ViewState | null {
+    if (!content.trimStart().startsWith("{")) {
+      this.load(content);
+      return null;
+    }
+    const p = validateProject(JSON.parse(content));
+    this.load(p.svg);
+    this.project = p.resources;
+    this.extensions = p.extensions;
+    this.select(p.workspace.selection);
+    this.markSaved();
+    return p.workspace;
+  }
   markSaved() {
-    this.saved = this.serialize();
+    this.saved = this.fingerprint();
     this.emit();
   }
   private snapshot(): Snapshot {
-    return { xml: this.serialize(), selection: [...this.ids] };
+    return {
+      xml: this.serialize(),
+      selection: [...this.ids],
+      project: structuredClone(this.project),
+    };
   }
   private restore(s: Snapshot) {
     this.mount(
@@ -170,6 +215,7 @@ export class SvgEditor {
         .documentElement as unknown as SVGSVGElement,
     );
     this.ids = [...s.selection];
+    this.project = structuredClone(s.project);
   }
   begin() {
     if (!this.pending) this.pending = this.snapshot();
@@ -179,7 +225,10 @@ export class SvgEditor {
     const before = this.pending;
     this.pending = null;
     const after = this.snapshot();
-    if (before.xml !== after.xml) {
+    if (
+      before.xml !== after.xml ||
+      JSON.stringify(before.project) !== JSON.stringify(after.project)
+    ) {
       this.past.push({ before, after, label });
       if (this.past.length > 150) this.past.shift();
       this.future = [];
