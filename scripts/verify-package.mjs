@@ -30,7 +30,16 @@ try {
   await expect(page.getByTestId("artboard").locator("#flower")).toBeVisible();
   await page.screenshot({ path: "docs/preview.png" });
   // Copy/paste runs the packaged native clipboard and the SVG reference remapper.
-  await page.getByRole("button", { name: "타이포그래피", exact: true }).click();
+  await page
+    .getByRole("button", { name: "타이포그래피", exact: true })
+    .dblclick();
+  await page
+    .getByRole("textbox", { name: "레이어 이름", exact: true })
+    .fill("Typography");
+  await page.getByRole("button", { name: "이름 변경", exact: true }).click();
+  await expect(
+    page.getByTestId("artboard").locator("#headline"),
+  ).toHaveAttribute("data-name", "Typography");
   await page.keyboard.press("Control+c");
   await page.keyboard.press("Control+v");
   await expect(page.getByTestId("artboard").locator("text")).toHaveCount(11);
@@ -57,6 +66,7 @@ try {
       executable,
       window: true,
       svgImport: true,
+      layerRename: true,
       clipboard: true,
       undo: true,
       edit: true,
