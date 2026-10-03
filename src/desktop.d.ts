@@ -7,6 +7,9 @@ declare global {
       newDocument(): Promise<void>;
       save(xml: string, saveAs?: boolean): Promise<string | null>;
       export(xml: string): Promise<string | null>;
+      download(name: string, base64: string): Promise<string | null>;
+      systemFonts(): Promise<{ id: string; name: string }[]>;
+      fontData(id: string): Promise<{ name: string; base64: string }>;
       changed(dirty: boolean): void;
       onSaveRequest(callback: () => Promise<boolean>): () => void;
       clipboardRead(): Promise<string>;

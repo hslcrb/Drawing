@@ -55,6 +55,9 @@ import { Timeline } from "./Timeline";
 import { previewSvg, animatedSvg } from "./core/motion";
 import { ExampleGallery } from "./ExampleGallery";
 import { exampleContent } from "./examples";
+import { BrandPanel } from "./BrandPanel";
+import { ContextMenu } from "./ContextMenu";
+const RetypoDialog = React.lazy(() => import("./RetypoDialog"));
 
 const toolList: {
   id: Tool;
@@ -184,7 +187,7 @@ function App() {
     [filename, setFilename] = useState("Welcome.drawing"),
     [error, setError] = useState("");
   const [modal, setModal] = useState<
-      "new" | "text" | "rename" | "help" | "examples" | null
+      "new" | "text" | "rename" | "help" | "examples" | "retypo" | null
     >(null),
     [text, setText] = useState("Drawing"),
     [textPoint, setTextPoint] = useState<Vec | null>(null),
@@ -195,7 +198,7 @@ function App() {
     [stroke, setStroke] = useState("none"),
     [strokeWidth, setStrokeWidth] = useState(2);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [mode, setMode] = useState<"design" | "motion">("design");
+  const [mode, setMode] = useState<"design" | "motion" | "identity">("design");
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [paintHandles, setPaintHandles] = useState<"fill" | "stroke" | null>(
@@ -254,6 +257,40 @@ function App() {
   const changeTool = (t: Tool) => {
     controller.current?.setTool(t);
     setTool(t);
+  };
+  const focusSelection = () => {
+    const box = engine.current?.selectionBounds();
+    if (!box || !viewport.current) return;
+    setZoom(
+      Math.max(
+        0.05,
+        Math.min(
+          4,
+          (viewport.current.clientWidth - 120) / Math.max(1, box.width),
+          (viewport.current.clientHeight - 120) / Math.max(1, box.height),
+        ),
+      ),
+    );
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const ed = engine.current,
+          vp = viewport.current;
+        if (!ed || !vp) return;
+        const m = ed.svg.getScreenCTM();
+        if (!m) return;
+        const x =
+            m.a * (box.x + box.width / 2) +
+            m.c * (box.y + box.height / 2) +
+            m.e,
+          y =
+            m.b * (box.x + box.width / 2) +
+            m.d * (box.y + box.height / 2) +
+            m.f,
+          rect = vp.getBoundingClientRect();
+        vp.scrollLeft += x - rect.x - rect.width / 2;
+        vp.scrollTop += y - rect.y - rect.height / 2;
+      }),
+    );
   };
   function download(xml: string, name: string) {
     const url = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml" }));
@@ -416,8 +453,8 @@ function App() {
   }, [fill, stroke, strokeWidth]);
   useEffect(() => window.desktop?.onSaveRequest(() => save()), [filename]);
   useEffect(() => {
-    controller.current!.enabled = mode === "design";
-    if (mode === "design") setPlaying(false);
+    controller.current!.enabled = mode !== "motion";
+    if (mode !== "motion") setPlaying(false);
   }, [mode]);
   useEffect(() => {
     if (mode === "motion" && engine.current && motionHost.current)
@@ -598,6 +635,7 @@ function App() {
       <React.Fragment key={el.id}>
         <div
           className={`layer ${e?.ids.includes(el.id) ? "selected" : ""}`}
+          data-context-id={el.id}
           style={{ paddingLeft: 8 + depth * 14 }}
         >
           <button
@@ -663,6 +701,18 @@ function App() {
   }
   return (
     <div className="app">
+      {e && (
+        <ContextMenu
+          editor={e}
+          tools={controller.current}
+          run={run}
+          asyncRun={asyncRun}
+          copy={copy}
+          paste={paste}
+          fit={fit}
+          retypo={() => setModal("retypo")}
+        />
+      )}
       <header>
         <a className="brand" href="#" onClick={(ev) => ev.preventDefault()}>
           <span className="brand-mark">
@@ -691,6 +741,16 @@ function App() {
             }}
           >
             모션
+          </button>
+          <button
+            aria-label="상징체계 모드"
+            className={mode === "identity" ? "active" : ""}
+            onClick={() => {
+              controller.current?.finishPen();
+              setMode("identity");
+            }}
+          >
+            상징체계
           </button>
         </nav>
         <div className="header-actions">
@@ -792,6 +852,16 @@ function App() {
             <Button label="화면 맞춤 (Ctrl+0)" icon={Maximize} onClick={fit} />
           </div>
         </aside>
+        {e && mode === "identity" && (
+          <BrandPanel
+            editor={e}
+            run={run}
+            asyncRun={asyncRun}
+            fit={fit}
+            focus={focusSelection}
+            retypo={() => setModal("retypo")}
+          />
+        )}
         <section className="workspace">
           <div className="workspace-caption">
             <span>ARTBOARD 01</span>
@@ -1309,7 +1379,7 @@ function App() {
       {modal && (
         <div className="modal-backdrop">
           <div
-            className={`modal ${modal === "help" ? "help-modal" : modal === "examples" ? "examples-modal" : ""}`}
+            className={`modal ${modal === "help" ? "help-modal" : modal === "examples" ? "examples-modal" : modal === "retypo" ? "retypo-modal" : ""}`}
             role="dialog"
             aria-modal="true"
           >
@@ -1320,7 +1390,11 @@ function App() {
             >
               <X size={18} />
             </button>
-            {modal === "examples" ? (
+            {modal === "retypo" && e ? (
+              <React.Suspense fallback={<p>Retypo 불러오는 중…</p>}>
+                <RetypoDialog editor={e} close={() => setModal(null)} />
+              </React.Suspense>
+            ) : modal === "examples" ? (
               <ExampleGallery
                 choose={(id) => void asyncRun(() => openExample(id))}
               />

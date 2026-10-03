@@ -85,6 +85,78 @@ ipcMain.handle("drawing:export", (event, xml) => {
   sender(event);
   return writeSvg(xml, true, true);
 });
+ipcMain.handle("drawing:download", async (event, name, base64) => {
+  sender(event);
+  if (
+    typeof name !== "string" ||
+    path.basename(name) !== name ||
+    !name.endsWith(".zip") ||
+    typeof base64 !== "string" ||
+    base64.length > 200 * 1024 * 1024 ||
+    !/^[A-Za-z0-9+/=]+$/.test(base64)
+  )
+    throw new Error("Invalid package");
+  const choice = await dialog.showSaveDialog(win, {
+    title: "상징체계 패키지 저장",
+    defaultPath: name,
+    filters: [{ name: "ZIP package", extensions: ["zip"] }],
+  });
+  if (choice.canceled || !choice.filePath) return null;
+  const target = choice.filePath.endsWith(".zip")
+      ? choice.filePath
+      : choice.filePath + ".zip",
+    temporary = target + `.drawing-${process.pid}.tmp`;
+  try {
+    await fs.writeFile(temporary, Buffer.from(base64, "base64"));
+    await fs.rename(temporary, target);
+  } catch (error) {
+    await fs.unlink(temporary).catch(() => {});
+    throw error;
+  }
+  return target;
+});
+const fontFiles = new Map();
+ipcMain.handle("drawing:fonts", async (event) => {
+  sender(event);
+  fontFiles.clear();
+  const roots =
+    process.platform === "win32"
+      ? [
+          path.join(process.env.WINDIR || "C:\\Windows", "Fonts"),
+          path.join(
+            app.getPath("home"),
+            "AppData/Local/Microsoft/Windows/Fonts",
+          ),
+        ]
+      : [];
+  const crypto = require("node:crypto");
+  for (const root of roots) {
+    const entries = await fs
+      .readdir(root, { withFileTypes: true })
+      .catch(() => []);
+    for (const entry of entries) {
+      if (!entry.isFile() || !/\.(ttf|otf)$/i.test(entry.name)) continue;
+      const target = path.join(root, entry.name),
+        id = crypto.createHash("sha256").update(target).digest("hex");
+      fontFiles.set(id, { target, name: entry.name });
+    }
+  }
+  return [...fontFiles]
+    .map(([id, f]) => ({ id, name: f.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+});
+ipcMain.handle("drawing:font-data", async (event, id) => {
+  sender(event);
+  const font = fontFiles.get(id);
+  if (!font) throw new Error("알 수 없는 시스템 폰트입니다.");
+  const stat = await fs.lstat(font.target);
+  if (!stat.isFile() || stat.size > 20 * 1024 * 1024)
+    throw new Error("지원하지 않는 폰트 파일입니다.");
+  return {
+    name: font.name,
+    base64: (await fs.readFile(font.target)).toString("base64"),
+  };
+});
 ipcMain.handle("drawing:clipboard-read", (event) => {
   sender(event);
   return clipboard.readText();

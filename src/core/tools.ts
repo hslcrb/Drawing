@@ -61,7 +61,7 @@ export class Tools {
       ? point(m.inverse(), { x: event.clientX, y: event.clientY })
       : { x: 0, y: 0 };
   }
-  private hit(target: EventTarget | null): SVGGraphicsElement | null {
+  hit(target: EventTarget | null): SVGGraphicsElement | null {
     let el = target instanceof Element ? target.closest("[id]") : null;
     if (!el || !this.editor.svg.contains(el) || !this.editor.editable(el))
       return null;

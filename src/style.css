@@ -9,6 +9,70 @@
   --border: #34353f;
   --muted: #868692;
 }
+.brand-panel {
+  width: 310px;
+  flex-shrink: 0;
+  overflow: auto;
+  background: #22212b;
+  border-right: 1px solid #45414e;
+  scrollbar-width: thin;
+}
+.brand-panel > section {
+  padding: 16px;
+  border-bottom: 1px solid #45414e;
+}
+.brand-panel .field {
+  margin-bottom: 8px;
+}
+.brand-panel > section > button {
+  margin-top: 8px;
+}
+.brand-component {
+  padding: 10px;
+  margin-top: 8px;
+  background: #18191f;
+  border: 1px solid #45414e;
+  border-radius: 6px;
+  display: grid;
+  gap: 4px;
+}
+.brand-component small,
+.brand-variants small {
+  color: #aaa0b9;
+}
+.matrix-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+  color: #b8b1c6;
+}
+.matrix-options label {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.brand-variants {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+  max-height: 360px;
+  overflow: auto;
+}
+.brand-variants button {
+  display: grid;
+  justify-content: stretch;
+  text-align: left;
+  background: #18191f;
+}
+@media (max-width: 1250px) {
+  .brand-panel {
+    width: 270px;
+  }
+  .mode-switch button {
+    padding: 6px;
+  }
+}
 .gradient-handles {
   position: absolute;
   inset: 0;
@@ -1027,4 +1091,184 @@ footer {
   .canvas-content {
     padding: 80px 55px;
   }
+}
+.retypo-modal {
+  width: min(1080px, 94vw);
+  max-height: 94vh;
+  overflow: auto;
+  padding: 30px;
+}
+.retypo-dialog h1 {
+  margin: 5px 0;
+}
+.retypo-dialog > p {
+  margin: 4px 0 20px;
+}
+.retypo-columns {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 24px;
+}
+.retypo-dialog h2 {
+  font-size: 14px;
+  margin: 10px 0;
+}
+.font-browser input,
+.glyph-browser > input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.font-list {
+  height: 320px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.font-list button {
+  text-align: left;
+  padding: 7px 9px;
+  flex-shrink: 0;
+}
+.font-upload {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.font-upload input {
+  margin-top: 5px;
+  font-size: 11px;
+}
+.font-report {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.font-report span,
+.retypo-dialog small {
+  color: var(--muted);
+}
+.glyph-grid {
+  height: 288px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+}
+.glyph-grid button {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 5px;
+  min-height: 76px;
+}
+.glyph-grid svg {
+  height: 38px;
+  width: 38px;
+  fill: currentColor;
+}
+.glyph-grid small {
+  font-size: 9px;
+}
+.glyph-paging,
+.retypo-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.glyph-paging {
+  justify-content: center;
+  font-size: 12px;
+}
+.retypo-analysis {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.retypo-analysis > .primary {
+  margin: 10px 0;
+  display: block;
+}
+.retypo-candidates {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  font-size: 11px;
+  padding: 8px 0;
+}
+.retypo-candidates span {
+  white-space: nowrap;
+  padding: 5px;
+  background: #f2edf9;
+  border-radius: 4px;
+}
+.retypo-error {
+  color: #b13f55;
+}
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  width: 240px;
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #d9d2e5;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px #24183a33;
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+}
+.context-menu small {
+  font-size: 10px;
+  padding: 7px 9px;
+  color: #8a7d9d;
+}
+.context-menu button {
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 6px 9px;
+  font-size: 12px;
+  min-height: 27px;
+  border-radius: 5px;
+}
+.context-menu button:hover,
+.context-menu button:focus-visible {
+  background: #eee6fb;
+  outline: none;
+}
+.context-menu button:disabled {
+  opacity: 0.4;
+}
+.context-menu hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid #eee8f3;
+  margin: 5px 0;
+}
+.context-menu {
+  background: #292832;
+  color: #e6e5ed;
+  border-color: #514b60;
+}
+.context-menu button {
+  color: inherit;
+}
+.context-menu button:hover,
+.context-menu button:focus-visible {
+  background: #443957;
+}
+.context-menu hr {
+  border-color: #494251;
+}
+.retypo-candidates span {
+  background: #352f43;
+}
+.brand-panel section > button {
+  width: 100%;
+  margin-top: 6px;
 }

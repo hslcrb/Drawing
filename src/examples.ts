@@ -3,8 +3,22 @@ import gradients from "../samples/gradients.svg?raw";
 import strokes from "../samples/strokes.svg?raw";
 import typography from "../samples/typography.svg?raw";
 import motion from "../samples/motion.svg?raw";
+import brand from "../samples/identity.svg?raw";
+import { SvgEditor } from "./core/editor";
+import {
+  registerComponent,
+  updateIdentity,
+  generateVariants,
+} from "./core/identity";
 import { emptyProject, defaultView, identityKey } from "./core/project";
 export const examples = [
+  {
+    id: "identity",
+    name: "One identity. Every application.",
+    description: "상징체계 · 연결 컴포넌트 · 국문/영문 조합",
+    svg: brand,
+    color: "#c6d8c9",
+  },
   {
     id: "welcome",
     name: "Make something",
@@ -44,6 +58,44 @@ export const examples = [
 export function exampleContent(id: string) {
   const example = examples.find((ex) => ex.id === id);
   if (!example) throw new Error("예제가 없습니다.");
+  if (id === "identity") {
+    const host = document.createElement("div");
+    host.style.cssText = "position:absolute;left:-20000px;top:0";
+    document.body.append(host);
+    const e = new SvgEditor(host);
+    try {
+      e.load(brand);
+      updateIdentity(e, (b) => {
+        b.name = "한빛문화진흥원";
+        b.ko = "한빛문화진흥원";
+        b.en = "HANBIT CULTURAL FOUNDATION";
+      });
+      for (const [source, role] of [
+        ["identity-symbol", "symbol"],
+        ["identity-ko", "logotype-ko"],
+        ["identity-en", "logotype-en"],
+      ] as const) {
+        e.select([source]);
+        registerComponent(e, role, "");
+      }
+      generateVariants(e, {
+        languages: ["ko", "en", "bilingual"],
+        layouts: ["horizontal"],
+        tones: ["primary", "reverse"],
+        width: 500,
+        height: 270,
+        columns: 2,
+      });
+      return e.serializeProject({
+        ...defaultView(),
+        mode: "identity",
+        selection: ["identity-symbol"],
+      });
+    } finally {
+      host.remove();
+      e.scope.project.remove();
+    }
+  }
   const resources = emptyProject(),
     workspace = defaultView();
   if (id === "motion") {

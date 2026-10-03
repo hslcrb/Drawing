@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="450" viewBox="0 0 1100 450">
+  <rect id="identity-paper" width="1100" height="450" fill="#f6f2fb" data-locked="true"/>
+  <text id="identity-title" x="48" y="55" font-family="Arial" font-size="13" fill="#80728f" letter-spacing="3">ONE IDENTITY. EVERY APPLICATION.</text>
+  <g id="identity-symbol" transform="translate(55 125)" data-name="한빛 심볼 원본" fill="#6550b7"><path d="M80 0C124 0 160 36 160 80H80Z"/><path d="M80 160C36 160 0 124 0 80H80Z"/><path d="M0 80C0 36 36 0 80 0V80Z" fill="#42856a"/><path d="M160 80C160 124 124 160 80 160V80Z" fill="#42856a"/></g>
+  <text id="identity-ko" x="280" y="190" font-family="Malgun Gothic, Arial" font-weight="700" font-size="52" fill="#6550b7" data-name="국문 로고타입 원본">한빛문화진흥원</text>
+  <text id="identity-en" x="282" y="246" font-family="Arial" font-weight="700" font-size="26" fill="#6550b7" data-name="영문 로고타입 원본">HANBIT CULTURAL FOUNDATION</text>
+  <text id="identity-caption" x="48" y="365" font-family="Malgun Gothic, Arial" font-size="17" fill="#746980">원본 심볼과 로고타입을 수정하면 연결된 국문·영문·국영문 조합이 함께 갱신됩니다.</text>
+  <text id="identity-caption-en" x="48" y="396" font-family="Arial" font-size="14" fill="#988aaa">Edit the masters. Generate a system. Export every variation.</text>
+</svg>

@@ -55,6 +55,204 @@
             "tracks"
           ],
           "additionalProperties": false
+        },
+        "identity": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "ko": {
+              "type": "string"
+            },
+            "en": {
+              "type": "string"
+            },
+            "components": {
+              "type": "array",
+              "maxItems": 500,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "enum": [
+                      "symbol",
+                      "logotype-ko",
+                      "logotype-en",
+                      "generic"
+                    ]
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1000000
+                  },
+                  "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "role",
+                  "sourceId",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "variants": {
+              "type": "array",
+              "maxItems": 500,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "enum": [
+                      "ko",
+                      "en",
+                      "bilingual"
+                    ]
+                  },
+                  "layout": {
+                    "enum": [
+                      "horizontal",
+                      "vertical",
+                      "logotype",
+                      "symbol"
+                    ]
+                  },
+                  "tone": {
+                    "enum": [
+                      "primary",
+                      "secondary",
+                      "mono",
+                      "reverse"
+                    ]
+                  },
+                  "symbolId": {
+                    "type": "string"
+                  },
+                  "koId": {
+                    "type": "string"
+                  },
+                  "enId": {
+                    "type": "string"
+                  },
+                  "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1000000
+                  },
+                  "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1000000
+                  },
+                  "linked": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "language",
+                  "layout",
+                  "tone",
+                  "symbolId",
+                  "koId",
+                  "enId",
+                  "width",
+                  "height",
+                  "linked"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "palette": {
+              "type": "object",
+              "properties": {
+                "primary": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                },
+                "secondary": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                },
+                "mono": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                },
+                "reverse": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                }
+              },
+              "required": [
+                "primary",
+                "secondary",
+                "mono",
+                "reverse"
+              ],
+              "additionalProperties": false
+            },
+            "gap": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "clearSpace": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "minWidth": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "showGuides": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "name",
+            "ko",
+            "en",
+            "components",
+            "variants",
+            "palette",
+            "gap",
+            "clearSpace",
+            "minWidth",
+            "showGuides"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -249,7 +447,8 @@
         "mode": {
           "enum": [
             "design",
-            "motion"
+            "motion",
+            "identity"
           ]
         },
         "tool": {
