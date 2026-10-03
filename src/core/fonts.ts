@@ -36,6 +36,7 @@ export async function makeEmbeddedFont(
   const family = `DrawingFont_${id.replace(/[^a-zA-Z0-9_]/g, "_")}`;
   const face = new FontFace(family, bytes.slice().buffer);
   await face.load();
+  document.fonts.add(face);
   const mime = bytes[0] === 79 && bytes[1] === 84 ? "otf" : "ttf";
   return {
     id,

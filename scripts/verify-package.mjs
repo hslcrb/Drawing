@@ -2,6 +2,7 @@ import { _electron as electron, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { verifyBrand } from "./verify-brand.mjs";
 
 const executable = path.resolve(
   process.argv[2] || "release/win-unpacked/Drawing.exe",
@@ -109,6 +110,7 @@ try {
   await expect(anchors).toHaveCount(3);
   await page.getByRole("button", { name: "열기 / 닫기", exact: true }).click();
   expect(await editable.getAttribute("d")).toMatch(/[zZ]$/);
+  const brand = await verifyBrand(page);
   expect(errors).toEqual([]);
   console.log(
     JSON.stringify({
@@ -121,6 +123,7 @@ try {
       edit: true,
       save: true,
       nodeEditing: true,
+      ...brand,
       rendererErrors: errors,
     }),
   );

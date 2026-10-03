@@ -4,6 +4,86 @@ import path from "node:path";
 import os from "node:os";
 import { unzipSync, strFromU8 } from "fflate";
 
+test("Retypo recognizes disconnected Hangul outlines and preserves a logotype master", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const bytes = (await fs.readFile("C:/Windows/Fonts/malgun.ttf")).toString(
+    "base64",
+  );
+  const result = await page.evaluate(async (base64) => {
+    const { SvgEditor } = await import("/src/core/editor.ts"),
+      { parseFont, pathData, recognizeOutlines, replaceWithText } =
+        await import("/src/core/retypo.ts"),
+      {
+        registerComponent,
+        updateIdentity,
+        defaultLogotypes,
+        generateVariants,
+      } = await import("/src/core/identity.ts"),
+      { makeEmbeddedFont } = await import("/src/core/fonts.ts");
+    const data = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)),
+      font = parseFont(data.buffer),
+      host = document.createElement("div");
+    document.body.append(host);
+    const e = new SvgEditor(host);
+    e.create("rect", { x: 30, y: 30, width: 80, height: 80, fill: "blue" });
+    registerComponent(e, "symbol", "Symbol");
+    const source = e.create("path", {
+      d: pathData(font.getPath("가나한빛", 200, 200, 80)),
+      fill: "purple",
+    });
+    registerComponent(e, "logotype-ko", "국문");
+    defaultLogotypes(e);
+    generateVariants(e, {
+      languages: ["ko"],
+      layouts: ["horizontal"],
+      tones: ["primary"],
+      width: 500,
+      height: 270,
+      columns: 1,
+    });
+    e.select([source.id]);
+    const recognition = await recognizeOutlines(
+        e,
+        font,
+        "가나한빛국문ㄱㄴㅎㅏㅣ",
+      ),
+      embedded = await makeEmbeddedFont(
+        new File([data], "malgun.ttf"),
+        "full",
+        recognition.text,
+        e.freshId(),
+      );
+    replaceWithText(e, font, embedded, recognition.text, recognition);
+    await document.fonts.load(`80px "${embedded.family}"`);
+    updateIdentity(e, () => {});
+    const restored = e.svg.querySelector(`[id="${source.id}"]`)!,
+      role = e.project.identity!.components.find(
+        (c) => c.sourceId === source.id,
+      )!.role,
+      box = e.bounds(restored as SVGGraphicsElement),
+      target = recognition.bounds;
+    const output = {
+      text: recognition.text,
+      score: recognition.score,
+      tag: restored.localName,
+      role,
+      ratio: box.width / target.width,
+      fontCount: e.project.fonts.length,
+    };
+    host.remove();
+    e.scope.project.remove();
+    return output;
+  }, bytes);
+  expect(result.text).toBe("가나한빛");
+  expect(result.score).toBeGreaterThan(0.98);
+  expect(result.tag).toBe("text");
+  expect(result.role).toBe("logotype-ko");
+  expect(result.fontCount).toBe(1);
+  expect(result.ratio).toBeCloseTo(1, 1);
+});
+
 test("identity masters drive variants, undo, detach, copies and project roundtrip", async ({
   page,
 }) => {

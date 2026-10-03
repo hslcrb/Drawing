@@ -49,7 +49,7 @@ export function registerComponent(
       height: Math.max(1, box.height),
     };
     source.setAttribute("data-brand-master", id);
-    b.components.push(c);
+    b.components.unshift(c);
   });
 }
 function syncComponent(e: SvgEditor, c: BrandComponent) {
@@ -60,7 +60,9 @@ function syncComponent(e: SvgEditor, c: BrandComponent) {
   const box = e.bounds(source),
     matrix = e.globalMatrix(source);
   const fingerprint =
-    new XMLSerializer().serializeToString(source) + matrixString(matrix);
+    new XMLSerializer().serializeToString(source) +
+    matrixString(matrix) +
+    JSON.stringify(box);
   const d = defs(e);
   let symbol = d.querySelector<SVGSymbolElement>(
     `:scope > [id="${CSS.escape(c.id)}"]`,
@@ -77,6 +79,24 @@ function syncComponent(e: SvgEditor, c: BrandComponent) {
   const clone = e.cloneNodes([source])[0];
   clone.removeAttribute("transform");
   clone.removeAttribute("data-brand-master");
+  const computed = getComputedStyle(source);
+  for (const property of [
+    "fill",
+    "stroke",
+    "stroke-width",
+    "fill-opacity",
+    "stroke-opacity",
+    "fill-rule",
+    "stroke-linecap",
+    "stroke-linejoin",
+    "stroke-dasharray",
+    "font-family",
+    "font-size",
+    "font-weight",
+    "text-anchor",
+    "color",
+  ])
+    clone.setAttribute(property, computed.getPropertyValue(property));
   const group = svgElement("g", {
     transform: `translate(${-box.x} ${-box.y}) ${matrixString(matrix)}`,
   });
@@ -136,6 +156,7 @@ function syncVariant(e: SvgEditor, v: BrandVariant, b: IdentitySystem) {
           ? b.palette.mono
           : b.palette.reverse;
   const fid = `brand-ink-${v.tone}`;
+  const tint = v.tone === "primary" ? null : fid;
   let filter = defs(e).querySelector(`[id="${fid}"]`);
   if (!filter) {
     filter = svgElement("filter", {
@@ -167,7 +188,7 @@ function syncVariant(e: SvgEditor, v: BrandVariant, b: IdentitySystem) {
         (W - symbol.width * s) / 2,
         (H - symbol.height * s) / 2,
         s,
-        fid,
+        tint,
       );
     }
   } else {
@@ -202,7 +223,7 @@ function syncVariant(e: SvgEditor, v: BrandVariant, b: IdentitySystem) {
           ? oy + ((nativeH - symbol.height) * scale) / 2
           : oy,
         scale,
-        fid,
+        tint,
       );
     let ly =
       oy +
@@ -214,7 +235,7 @@ function syncVariant(e: SvgEditor, v: BrandVariant, b: IdentitySystem) {
         v.layout === "horizontal" && useSymbol
           ? ox + (symbol.width + b.gap) * scale
           : ox + ((nativeW - c.width) * scale) / 2;
-      placeUse(holder, c, lx, ly, scale, fid);
+      placeUse(holder, c, lx, ly, scale, tint);
       ly += (c.height + 12) * scale;
     }
   }
@@ -266,8 +287,13 @@ export function syncIdentity(e: SvgEditor) {
         const v = JSON.parse(
           g.getAttribute("data-brand-config")!,
         ) as BrandVariant;
-        if (b.variants.some((old) => old.id === v.id))
-          b.variants.push({ ...v, id: g.id, name: `${v.name} 복제` });
+        const original = b.variants.find((old) => old.id === v.id);
+        if (original)
+          b.variants.push({
+            ...original,
+            id: g.id,
+            name: `${original.name} 복제`,
+          });
       } catch {}
     }
   for (const c of b.components) syncComponent(e, c);

@@ -1,11 +1,11 @@
-# Drawing 1.1.0 verification
+# Drawing 1.2.0 verification
 
 Date: 2026-10-04 (Asia/Seoul). Platform: Windows x64.
 
 ## Automated checks
 
 `npm test` completed successfully: TypeScript check, Vite production build and
-**31 Playwright tests passed**. Tests use real Chromium and Electron.
+**37 Playwright tests passed**. Tests use real Chromium and Electron.
 
 | Requirement | Evidence |
 | --- | --- |
@@ -22,7 +22,10 @@ Date: 2026-10-04 (Asia/Seoul). Platform: Windows x64.
 | Rich appearance | Four editable gradient types, stop selection, canvas-handle dragging and undo, stroke cap/dash attributes |
 | Embedded images/fonts | Real PNG file input and saved manifest; full vs HarfBuzz subset TTF size, CSS font registration and load after project reopening |
 | Keyframe motion | Native exported SVG animation at expected position, nested transforms, easing/step interpolation, tracks/undo, UI scrub/play/export and untouched source |
-| Example library | All five documents opened; bundled motion example scrubs and plays |
+| Example library | All six documents opened; bundled motion example scrubs and plays |
+| Identity systems | 36-way matrix, master resize propagation, undo/redo, independent detach and preserved colors, linked copies, unique IDs, project/mode roundtrip, 42 delivered SVGs and real native ZIP save |
+| Retypo | Actual Arial outline match at 100% similarity; multipart Hangul recognition for 가나한빛, logotype master preservation and native glyph dimensions, editable SVG text with embedded full font; font file input and restricted system-font IPC |
+| Context menus | Header, layers, selection duplication, text-field selection; actual packaged context menu opens Retypo |
 | Windows EXE | electron-builder portable x64 build; actual packaged application and portable wrapper launched and edited |
 
 ## Packaged application checks
@@ -30,19 +33,19 @@ Date: 2026-10-04 (Asia/Seoul). Platform: Windows x64.
 `node scripts/verify-package.mjs` passed on `release/win-unpacked/Drawing.exe`:
 window display, sample SVG import, layer rename, native clipboard, undo, shape
 editing, actual Drawing project saving, node insertion/deletion and path closure, plus actual packaged HarfBuzz WASM font
-subsetting and project saving. No renderer errors were recorded. The rendered
+subsetting and project saving. No renderer errors were recorded. The same packaged app also passed 42 identity variants, native system-font reporting, Retypo matching/conversion and editing the recovered text. The rendered
 sample is captured in `docs/preview.png`.
 
 `node scripts/verify-portable.mjs` passed on the actual distribution file
-`release/Drawing-1.1.0-win-x64.exe`: bundled startup artwork, blank new document, rectangle drawing, Alt-drag
-duplication, undo, example gallery, motion scrub and playback. Product metadata reports **Drawing 1.1.0**.
+`release/Drawing-1.2.0-win-x64.exe`: bundled startup artwork, blank new document, rectangle drawing, Alt-drag
+duplication, undo, example gallery, motion scrub and playback. The portable EXE also passed 42 identity variants, native font reporting, 100% Arial outline matching, text recovery and re-editing, and context-menu operation. No renderer errors occurred. Screenshots are in `docs/identity.png` and `docs/retypo.png`. Product metadata reports **Drawing 1.2.0**.
 
-Distribution bytes: **143091846**.
+Distribution bytes: **143180152**.
 
 SHA-256:
 
 ```text
-2a312e34e9becda532415bd08f4414ee82eaf35c6a668001c233e26f417a131b
+846e27590fc4fde61f3c9e032d0174b77a13942f714d7e6b6f25297d34737038
 ```
 
 ## External check limitation
