@@ -9,6 +9,66 @@
   --border: #34353f;
   --muted: #868692;
 }
+.gradient-handles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.gradient-handles circle {
+  pointer-events: all;
+  cursor: grab;
+}
+.gradient-ramp {
+  height: 22px;
+  border-radius: 5px;
+  margin: 12px 0;
+  border: 1px solid #666;
+}
+.stop-list {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.stop-list i {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid #aaa;
+}
+.field select {
+  width: 100%;
+  min-width: 0;
+  background: #1c1d24;
+  color: #dedce9;
+  border: 1px solid #3b3c47;
+  border-radius: 5px;
+  padding: 7px 4px;
+}
+.panel-note {
+  font-size: 10px;
+  margin: 8px 0 0;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  color: #b8b7c3;
+}
+.resource-card {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  margin-top: 8px;
+  background: #1c1d24;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+.resource-card small,
+.resource-card span {
+  color: #9995a7;
+}
 * {
   box-sizing: border-box;
 }
