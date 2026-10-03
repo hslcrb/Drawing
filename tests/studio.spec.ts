@@ -1,6 +1,52 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 
+test("example gallery opens all five editable documents and motion sample plays", async ({
+  page,
+}) => {
+  await page.goto("/");
+  for (const id of [
+    "gradients",
+    "strokes",
+    "typography",
+    "motion",
+    "welcome",
+  ]) {
+    await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+    await page.getByRole("button", { name: `예제 ${id}`, exact: true }).click();
+    await expect(
+      page.getByTestId("artboard").locator("text").first(),
+    ).toBeAttached();
+    if (id === "motion") {
+      await expect(page.getByTestId("timeline")).toBeVisible();
+      await page
+        .getByRole("spinbutton", { name: "모션 시간", exact: true })
+        .fill("2");
+      await expect(
+        page
+          .getByTestId("motion-preview")
+          .locator('[data-motion-target="motion-star"]'),
+      ).toHaveAttribute("transform", /rotate\(180\)/);
+      await page
+        .getByRole("button", { name: "모션 재생", exact: true })
+        .click();
+      await expect
+        .poll(async () =>
+          Number(
+            await page
+              .getByRole("spinbutton", { name: "모션 시간", exact: true })
+              .inputValue(),
+          ),
+        )
+        .toBeGreaterThan(2);
+      await page
+        .getByRole("button", { name: "모션 일시정지", exact: true })
+        .click();
+    }
+  }
+  await expect(page.getByTestId("artboard")).toContainText("Make something");
+});
+
 test("keyframe interpolation, step, undo and animated export preserve source", async ({
   page,
 }) => {

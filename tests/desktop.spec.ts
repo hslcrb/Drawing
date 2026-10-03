@@ -93,6 +93,9 @@ test("Electron edits, saves, reopens SVG and resets save path for a new document
     await expect(board.locator("rect")).toHaveCount(1);
     await expect(page.locator(".doc-tab")).toContainText("drawing.drawing");
     await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+    await page
+      .getByRole("button", { name: "예제 welcome", exact: true })
+      .click();
     await expect(board.locator("text")).toHaveCount(7);
     await app.evaluate(({ dialog }, target) => {
       dialog.showSaveDialog = async () => ({

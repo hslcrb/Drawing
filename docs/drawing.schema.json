@@ -1,0 +1,312 @@
+{
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "Drawing"
+    },
+    "version": {
+      "const": 1
+    },
+    "svg": {
+      "type": "string"
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/asset"
+          }
+        },
+        "fonts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/font"
+          }
+        },
+        "motion": {
+          "type": "object",
+          "properties": {
+            "duration": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 3600
+            },
+            "fps": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 120
+            },
+            "loop": {
+              "type": "boolean"
+            },
+            "tracks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/track"
+              }
+            }
+          },
+          "required": [
+            "duration",
+            "fps",
+            "loop",
+            "tracks"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "assets",
+        "fonts",
+        "motion"
+      ],
+      "additionalProperties": false
+    },
+    "workspace": {
+      "$ref": "#/$defs/workspace"
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "format",
+    "version",
+    "svg",
+    "resources",
+    "workspace",
+    "extensions"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hslcrb/Drawing/blob/main/docs/drawing.schema.json",
+  "title": "Drawing open project format v1",
+  "$defs": {
+    "keyframe": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "x": {
+          "type": "number",
+          "minimum": -1000000.0,
+          "maximum": 1000000.0
+        },
+        "y": {
+          "type": "number",
+          "minimum": -1000000.0,
+          "maximum": 1000000.0
+        },
+        "rotation": {
+          "type": "number",
+          "minimum": -36000,
+          "maximum": 36000
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.001,
+          "maximum": 1000
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "easing": {
+          "enum": [
+            "linear",
+            "ease-in-out",
+            "step"
+          ]
+        }
+      },
+      "required": [
+        "time",
+        "x",
+        "y",
+        "rotation",
+        "scale",
+        "opacity",
+        "easing"
+      ],
+      "additionalProperties": false
+    },
+    "track": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/keyframe"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "keys"
+      ],
+      "additionalProperties": false
+    },
+    "asset": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "mime": {
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/gif"
+          ]
+        },
+        "data": {
+          "type": "string",
+          "pattern": "^data:image/(png|jpeg|webp|gif);base64,[a-zA-Z0-9+/=]+$"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "mime",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "font": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "mode": {
+          "enum": [
+            "full",
+            "subset"
+          ]
+        },
+        "data": {
+          "type": "string",
+          "pattern": "^data:font/(ttf|otf);base64,[a-zA-Z0-9+/=]+$"
+        },
+        "characters": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 31457280
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "family",
+        "mode",
+        "data",
+        "characters",
+        "bytes"
+      ],
+      "additionalProperties": false
+    },
+    "workspace": {
+      "type": "object",
+      "properties": {
+        "zoom": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 8
+        },
+        "scrollX": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000000.0
+        },
+        "scrollY": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000000.0
+        },
+        "mode": {
+          "enum": [
+            "design",
+            "motion"
+          ]
+        },
+        "tool": {
+          "enum": [
+            "select",
+            "node",
+            "pen",
+            "rect",
+            "ellipse",
+            "line",
+            "text",
+            "hand"
+          ]
+        },
+        "selection": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expanded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fill": {
+          "type": "string"
+        },
+        "stroke": {
+          "type": "string"
+        },
+        "strokeWidth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "time": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        }
+      },
+      "required": [
+        "zoom",
+        "scrollX",
+        "scrollY",
+        "mode",
+        "tool",
+        "selection",
+        "expanded",
+        "fill",
+        "stroke",
+        "strokeWidth",
+        "time"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
