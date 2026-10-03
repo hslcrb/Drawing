@@ -5,6 +5,8 @@
 Drawing은 SVG 문서를 직접 편집하는 데스크톱 벡터 편집기입니다. 패스파인더,
 완전히 투명한 요소 정리, Alt 드래그 복제와 펜·노드 편집을 제공합니다.
 
+![Drawing desktop editor](docs/preview.png)
+
 ## 실행
 
 [Releases](https://github.com/hslcrb/Drawing/releases)에서 `Drawing-1.0.0-win-x64.exe`를

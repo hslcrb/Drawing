@@ -55,6 +55,7 @@
       "icon": "assets/icon.ico"
     },
     "portable": {
+      "useZip": true,
       "artifactName": "Drawing-${version}-win-x64.exe"
     }
   }
