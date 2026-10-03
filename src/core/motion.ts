@@ -49,8 +49,10 @@ function center(e: SvgEditor, id: string) {
     `[id="${CSS.escape(id)}"]`,
   );
   if (!el) return { x: 0, y: 0 };
-  const b = el.getBBox(),
-    m = el.transform.baseVal.consolidate()?.matrix || new DOMMatrix();
+  const b = el.getBBox();
+  let m = new DOMMatrix();
+  for (let i = 0; i < el.transform.baseVal.numberOfItems; i++)
+    m = m.multiply(el.transform.baseVal.getItem(i).matrix);
   return point(m, { x: b.x + b.width / 2, y: b.y + b.height / 2 });
 }
 function wrap(svg: SVGSVGElement, id: string) {

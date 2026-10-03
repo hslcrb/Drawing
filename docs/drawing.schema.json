@@ -291,6 +291,18 @@
           "type": "number",
           "minimum": 0,
           "maximum": 3600
+        },
+        "inspectorScroll": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000000.0
+        },
+        "paintHandles": {
+          "enum": [
+            null,
+            "fill",
+            "stroke"
+          ]
         }
       },
       "required": [
