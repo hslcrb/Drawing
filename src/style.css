@@ -76,6 +76,49 @@
   background: #18191f;
   border-radius: 7px;
 }
+.examples-modal {
+  width: 900px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow: auto;
+}
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 24px;
+}
+.example-grid > button {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  padding: 0 0 16px;
+  gap: 8px;
+  background: #1c1d24;
+  border: 1px solid #45424e;
+  overflow: hidden;
+}
+.example-thumbnail {
+  height: 140px;
+  overflow: hidden;
+}
+.example-thumbnail svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.example-grid strong,
+.example-grid span {
+  padding: 0 12px;
+}
+.example-grid span {
+  color: #aaa2ba;
+  font-size: 11px;
+}
+.example-grid > button:hover {
+  border-color: #a794ff;
+}
 .motion-source {
   visibility: hidden;
   pointer-events: none;

@@ -22,6 +22,7 @@ test("bundled welcome artwork opens at startup and can always be restored", asyn
   await page.getByRole("button", { name: "만들기", exact: true }).click();
   await expect(board.locator("text")).toHaveCount(0);
   await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await page.getByRole("button", { name: "예제 welcome", exact: true }).click();
   await expect(board.locator("text")).toHaveCount(7);
   expect(await artwork()).toBe(original);
   await page.getByRole("button", { name: "타이포그래피", exact: true }).click();
@@ -33,7 +34,9 @@ test("bundled welcome artwork opens at startup and can always be restored", asyn
     dismissed++;
   });
   await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await page.getByRole("button", { name: "예제 welcome", exact: true }).click();
   await expect.poll(() => dismissed).toBe(2);
+  await page.getByRole("button", { name: "닫기", exact: true }).click();
   await expect(board.locator("text")).toHaveCount(3);
   page.removeAllListeners("dialog");
   page.on("dialog", (dialog) =>
@@ -42,6 +45,7 @@ test("bundled welcome artwork opens at startup and can always be restored", asyn
       : dialog.dismiss(),
   );
   await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await page.getByRole("button", { name: "예제 welcome", exact: true }).click();
   await expect(board.locator("text")).toHaveCount(7);
   expect(await artwork()).toBe(original);
 });

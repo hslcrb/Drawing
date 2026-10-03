@@ -74,6 +74,7 @@ try {
     }),
   );
   await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await page.getByRole("button", { name: "예제 welcome", exact: true }).click();
   await expect(board.locator("text")).toHaveCount(7);
   await page.close();
 } finally {

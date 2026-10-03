@@ -53,6 +53,8 @@ import { PaintEditor, GradientHandles } from "./PaintEditor";
 import { ResourcePanel } from "./ResourcePanel";
 import { Timeline } from "./Timeline";
 import { previewSvg, animatedSvg } from "./core/motion";
+import { ExampleGallery } from "./ExampleGallery";
+import { exampleContent } from "./examples";
 
 const toolList: {
   id: Tool;
@@ -180,9 +182,9 @@ function App() {
     [zoom, setZoom] = useState(0.8),
     [filename, setFilename] = useState("Welcome.drawing"),
     [error, setError] = useState("");
-  const [modal, setModal] = useState<"new" | "text" | "rename" | "help" | null>(
-      null,
-    ),
+  const [modal, setModal] = useState<
+      "new" | "text" | "rename" | "help" | "examples" | null
+    >(null),
     [text, setText] = useState("Drawing"),
     [textPoint, setTextPoint] = useState<Vec | null>(null),
     [renameId, setRenameId] = useState(""),
@@ -324,15 +326,14 @@ function App() {
       requestAnimationFrame(fit);
     }
   }
-  async function openExample() {
+  async function openExample(id = "welcome") {
     controller.current?.finishPen();
     if (!(await guard())) return;
     controller.current?.cancel();
-    engine.current!.load(welcomeSvg);
+    loadDocument(exampleContent(id));
     await window.desktop?.newDocument();
-    setFilename("Welcome.drawing");
-    setMode("design");
-    setTime(0);
+    setFilename(id === "welcome" ? "Welcome.drawing" : `${id}.drawing`);
+    setModal(null);
     requestAnimationFrame(fit);
   }
   async function copy(cut = false) {
@@ -683,7 +684,7 @@ function App() {
           <Button
             label="예제 열기"
             icon={Sparkles}
-            onClick={() => void asyncRun(openExample)}
+            onClick={() => setModal("examples")}
           >
             예제
           </Button>
@@ -1295,7 +1296,7 @@ function App() {
       {modal && (
         <div className="modal-backdrop">
           <div
-            className={`modal ${modal === "help" ? "help-modal" : ""}`}
+            className={`modal ${modal === "help" ? "help-modal" : modal === "examples" ? "examples-modal" : ""}`}
             role="dialog"
             aria-modal="true"
           >
@@ -1306,7 +1307,11 @@ function App() {
             >
               <X size={18} />
             </button>
-            {modal === "new" ? (
+            {modal === "examples" ? (
+              <ExampleGallery
+                choose={(id) => void asyncRun(() => openExample(id))}
+              />
+            ) : modal === "new" ? (
               <>
                 <span className="eyebrow">A NEW BEGINNING</span>
                 <h1>새로운 캔버스</h1>
