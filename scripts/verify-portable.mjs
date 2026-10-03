@@ -76,6 +76,32 @@ try {
   await page.getByRole("button", { name: "예제 열기", exact: true }).click();
   await page.getByRole("button", { name: "예제 welcome", exact: true }).click();
   await expect(board.locator("text")).toHaveCount(7);
+  await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await page.screenshot({ path: "docs/examples.png" });
+  await page.getByRole("button", { name: "예제 motion", exact: true }).click();
+  await expect(page.getByTestId("timeline")).toBeVisible();
+  await page
+    .getByRole("spinbutton", { name: "모션 시간", exact: true })
+    .fill("2");
+  await expect(
+    page
+      .getByTestId("motion-preview")
+      .locator('[data-motion-target="motion-star"]'),
+  ).toHaveAttribute("transform", /rotate\(180\)/);
+  await page.screenshot({ path: "docs/motion.png" });
+  await page.getByRole("button", { name: "모션 재생", exact: true }).click();
+  await expect
+    .poll(async () =>
+      Number(
+        await page
+          .getByRole("spinbutton", { name: "모션 시간", exact: true })
+          .inputValue(),
+      ),
+    )
+    .toBeGreaterThan(2);
+  await page
+    .getByRole("button", { name: "모션 일시정지", exact: true })
+    .click();
   await page.close();
 } finally {
   await browser.close();

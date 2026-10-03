@@ -1,11 +1,11 @@
-# Drawing 1.0.2 verification
+# Drawing 1.1.0 verification
 
 Date: 2026-10-04 (Asia/Seoul). Platform: Windows x64.
 
 ## Automated checks
 
-`npm run build` and `npx playwright test` completed successfully: TypeScript check, Vite production build and
-**22 Playwright tests passed**. Tests use real Chromium and Electron.
+`npm test` completed successfully: TypeScript check, Vite production build and
+**31 Playwright tests passed**. Tests use real Chromium and Electron.
 
 | Requirement | Evidence |
 | --- | --- |
@@ -18,31 +18,38 @@ Date: 2026-10-04 (Asia/Seoul). Platform: Windows x64.
 | Layer editing | Actual Electron in-app rename dialog; sample group selected through layer panel |
 | Desktop files | Real IPC, file writes, file reopen, new-document save-path reset; only path selection in native dialog is controlled |
 | Bundled welcome example | Startup artwork, restore original after edits, cancel unsaved discard, blank new documents and example save-path reset |
+| Open project format | SVG/resources/workspace/extensions roundtrip, invalid version atomic rejection, real Electron project save/reopen |
+| Rich appearance | Four editable gradient types, stop selection, canvas-handle dragging and undo, stroke cap/dash attributes |
+| Embedded images/fonts | Real PNG file input and saved manifest; full vs HarfBuzz subset TTF size, CSS font registration and load after project reopening |
+| Keyframe motion | Native exported SVG animation at expected position, nested transforms, easing/step interpolation, tracks/undo, UI scrub/play/export and untouched source |
+| Example library | All five documents opened; bundled motion example scrubs and plays |
 | Windows EXE | electron-builder portable x64 build; actual packaged application and portable wrapper launched and edited |
 
 ## Packaged application checks
 
 `node scripts/verify-package.mjs` passed on `release/win-unpacked/Drawing.exe`:
 window display, sample SVG import, layer rename, native clipboard, undo, shape
-editing, actual SVG saving, node insertion/deletion and path closure. No renderer errors were recorded. The rendered
+editing, actual Drawing project saving, node insertion/deletion and path closure, plus actual packaged HarfBuzz WASM font
+subsetting and project saving. No renderer errors were recorded. The rendered
 sample is captured in `docs/preview.png`.
 
 `node scripts/verify-portable.mjs` passed on the actual distribution file
-`release/Drawing-1.0.2-win-x64.exe`: bundled startup artwork, blank new document, rectangle drawing, Alt-drag
-duplication, undo and reopening the bundled original. Product metadata reports **Drawing 1.0.2**.
+`release/Drawing-1.1.0-win-x64.exe`: bundled startup artwork, blank new document, rectangle drawing, Alt-drag
+duplication, undo, example gallery, motion scrub and playback. Product metadata reports **Drawing 1.1.0**.
 
-Distribution bytes: **142773746**.
+Distribution bytes: **143091846**.
 
 SHA-256:
 
 ```text
-f8e0990fb446f1d3b1224dea1cb0567d15f19ebdb37faa4ce635daeb5d8b59d7
+2a312e34e9becda532415bd08f4414ee82eaf35c6a668001c233e26f417a131b
 ```
 
 ## External check limitation
 
 GitHub Actions did not start a runner. GitHub reports:
 “The job was not started because your account is locked due to a billing issue.”
+This was the external account state observed during earlier 1.0 verification.
 This is distinct from the passing local checks. The workflow remains available
 for use when the account restriction is resolved.
 

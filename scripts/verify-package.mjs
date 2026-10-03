@@ -60,8 +60,28 @@ try {
   await page.keyboard.press("Control+Shift+s");
   await expect(page.locator(".doc-tab")).toContainText("packaged.drawing");
   const output = await fs.readFile(savedPath, "utf8");
+  expect(JSON.parse(output).format).toBe("Drawing");
   expect(output).toContain("linearGradient");
   expect(output).not.toContain("data-testid");
+  // Production font subset runs the shipped WASM, without a server or fetch.
+  if (process.platform === "win32") {
+    await page.getByRole("button", { name: "Typography", exact: true }).click();
+    await page
+      .getByRole("combobox", { name: "폰트 포함 방식", exact: true })
+      .selectOption("subset");
+    await page
+      .getByTestId("font-input")
+      .setInputFiles("C:/Windows/Fonts/arial.ttf");
+    await expect(
+      page.getByTestId("artboard").locator("style[data-font]"),
+    ).toHaveCount(1, { timeout: 30000 });
+    await page.getByRole("button", { name: "저장", exact: true }).click();
+    const project = JSON.parse(await fs.readFile(savedPath, "utf8"));
+    expect(project.resources.fonts[0].mode).toBe("subset");
+    expect(project.resources.fonts[0].bytes).toBeLessThan(
+      (await fs.stat("C:/Windows/Fonts/arial.ttf")).size / 3,
+    );
+  }
   await page.getByRole("button", { name: "새 문서", exact: true }).click();
   await page.getByRole("button", { name: "만들기", exact: true }).click();
   await page.getByRole("button", { name: "펜 (P)", exact: true }).click();
