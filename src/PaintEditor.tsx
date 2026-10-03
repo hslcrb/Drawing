@@ -22,13 +22,16 @@ export function PaintEditor({
   run: (fn: () => void) => void;
 }) {
   const [property, setProperty] = useState<"fill" | "stroke">("fill");
+  useEffect(() => {
+    if (active) setProperty(active);
+  }, [active]);
   const [draft, setDraft] = useState<GradientPaint>(initialPaint());
   const current = readPaint(editor, property);
   const [node, setNode] = useState(0);
   useEffect(() => {
     if (current) setDraft(current);
-    setNode(0);
   }, [revision, property]);
+  useEffect(() => setNode(0), [editor.ids.join("|"), property]);
   const p = current || draft,
     n = p.nodes[Math.min(node, p.nodes.length - 1)];
   const change = (fn: (next: GradientPaint) => void) => {

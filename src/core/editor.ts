@@ -89,10 +89,14 @@ export class SvgEditor {
     return { x: b.x, y: b.y, width: b.width, height: b.height };
   }
   freshId() {
-    let id;
+    let id: string;
     do {
       id = `drawing-${++this.counter}`;
-    } while (this.svg?.querySelector(`[id="${id}"]`));
+    } while (
+      this.svg?.querySelector(`[id="${id}"]`) ||
+      this.project.assets.some((a) => a.id === id) ||
+      this.project.fonts.some((f) => f.id === id)
+    );
     return id;
   }
   private ensureIds() {

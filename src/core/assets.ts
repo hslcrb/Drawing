@@ -20,8 +20,8 @@ export async function embedImage(e: SvgEditor, file: File) {
   await image.decode();
   const scale = Math.min(
     1,
-    (e.size.width - 64) / image.naturalWidth,
-    (e.size.height - 64) / image.naturalHeight,
+    Math.max(1, e.size.width - 64) / image.naturalWidth,
+    Math.max(1, e.size.height - 64) / image.naturalHeight,
   );
   e.command("이미지 포함", () => {
     const id = e.freshId();
@@ -30,8 +30,8 @@ export async function embedImage(e: SvgEditor, file: File) {
       svgElement("image", {
         id,
         href: data,
-        x: 32,
-        y: 32,
+        x: Math.min(32, e.size.width * 0.1),
+        y: Math.min(32, e.size.height * 0.1),
         width: image.naturalWidth * scale,
         height: image.naturalHeight * scale,
         "data-name": file.name,

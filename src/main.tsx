@@ -175,6 +175,7 @@ function App() {
     viewport = useRef<HTMLDivElement>(null),
     fileInput = useRef<HTMLInputElement>(null);
   const motionHost = useRef<HTMLDivElement>(null);
+  const inspector = useRef<HTMLElement>(null);
   const engine = useRef<SvgEditor | null>(null),
     controller = useRef<Tools | null>(null);
   const [revision, update] = useState(0),
@@ -213,6 +214,8 @@ function App() {
     stroke,
     strokeWidth,
     time,
+    inspectorScroll: inspector.current?.scrollTop || 0,
+    paintHandles,
   };
   const e = engine.current,
     b = e?.selectionBounds(),
@@ -263,6 +266,13 @@ function App() {
   async function save(saveAs = false): Promise<boolean> {
     const ed = engine.current!;
     controller.current?.finishPen();
+    workspace.current = {
+      ...workspace.current,
+      scrollX: viewport.current?.scrollLeft || 0,
+      scrollY: viewport.current?.scrollTop || 0,
+      selection: [...ed.ids],
+      inspectorScroll: inspector.current?.scrollTop || 0,
+    };
     if (window.desktop) {
       const path = await window.desktop.save(
         ed.serializeProject(workspace.current),
@@ -312,12 +322,15 @@ function App() {
       setFill(view.fill);
       setStroke(view.stroke);
       setStrokeWidth(view.strokeWidth);
+      setPaintHandles(view.paintHandles || null);
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           if (viewport.current) {
             viewport.current.scrollLeft = view.scrollX;
             viewport.current.scrollTop = view.scrollY;
           }
+          if (inspector.current)
+            inspector.current.scrollTop = view.inspectorScroll || 0;
         }),
       );
     } else {
@@ -855,7 +868,7 @@ function App() {
             <Button label="화면 맞춤" icon={Maximize} onClick={fit} />
           </div>
         </section>
-        <aside className="inspector">
+        <aside className="inspector" ref={inspector}>
           <div className="inspector-title">
             <span>속성</span>
             <span>{sel.length ? `${sel.length}개 선택` : "문서"}</span>

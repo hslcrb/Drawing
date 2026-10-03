@@ -20,6 +20,8 @@ export type ViewState = {
   stroke: string;
   strokeWidth: number;
   time: number;
+  inspectorScroll?: number;
+  paintHandles?: "fill" | "stroke" | null;
 };
 export type Asset = { id: string; name: string; mime: string; data: string };
 export type EmbeddedFont = {
@@ -61,6 +63,8 @@ export const defaultView = (): ViewState => ({
   stroke: "none",
   strokeWidth: 2,
   time: 0,
+  inspectorScroll: 0,
+  paintHandles: null,
 });
 export const identityKey = (time = 0): Keyframe => ({
   time,
@@ -88,6 +92,13 @@ export function validateProject(value: unknown): ProjectFile {
     return fail();
   const r = p.resources,
     v = p.workspace;
+  if (
+    v &&
+    ((v.inspectorScroll !== undefined && !finite(v.inspectorScroll, 0, 1e7)) ||
+      (v.paintHandles !== undefined &&
+        ![null, "fill", "stroke"].includes(v.paintHandles)))
+  )
+    return fail();
   if (
     !r ||
     !Array.isArray(r.assets) ||

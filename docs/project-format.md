@@ -65,7 +65,8 @@ SVG export emits the static artwork. SVG import strips active animation elements
 use `.drawing` to retain an editable timeline.
 
 Workspace records zoom, viewport scroll, mode, selected tool, selected IDs,
-expanded layer groups, default paint settings and timeline playhead. It does not
+expanded layer groups, default paint settings, timeline playhead, inspector scroll and active gradient
+handles. It does not
 resume live playback, an open file dialog, or undo history. Viewing and scrolling
 do not dirty a document, but their current state is captured on explicit save.
 Artwork/resources/timeline changes participate in undo and dirty tracking.

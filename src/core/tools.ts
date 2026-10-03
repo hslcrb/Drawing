@@ -75,6 +75,8 @@ export class Tools {
   }
   private down = (ev: PointerEvent) => {
     if (!this.enabled) return;
+    if (ev.target instanceof Element && ev.target.closest(".gradient-handles"))
+      return;
     if (ev.button !== 0 && ev.button !== 1) return;
     ev.preventDefault();
     this.stage.focus();
