@@ -60,6 +60,33 @@ try {
   const output = await fs.readFile(savedPath, "utf8");
   expect(output).toContain("linearGradient");
   expect(output).not.toContain("data-testid");
+  await page.getByRole("button", { name: "새 문서", exact: true }).click();
+  await page.getByRole("button", { name: "만들기", exact: true }).click();
+  await page.getByRole("button", { name: "펜 (P)", exact: true }).click();
+  const fresh = await page.getByTestId("artboard").boundingBox();
+  await page.mouse.click(fresh.x + 90, fresh.y + 90);
+  await page.mouse.move(fresh.x + 190, fresh.y + 150);
+  await page.mouse.down();
+  await page.mouse.move(fresh.x + 220, fresh.y + 100);
+  await page.mouse.up();
+  await page.mouse.click(fresh.x + 280, fresh.y + 220);
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "노드 (A)", exact: true }).click();
+  const anchors = page.locator("[data-node]:not([data-component])");
+  await expect(anchors).toHaveCount(3);
+  const editable = page.getByTestId("artboard").locator("path");
+  const curvePoint = await editable.evaluate((el) => {
+    const p = el.getPointAtLength(el.getTotalLength() * 0.25),
+      m = el.getScreenCTM();
+    return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f };
+  });
+  await page.mouse.dblclick(curvePoint.x, curvePoint.y);
+  await expect(anchors).toHaveCount(4);
+  await page.locator('[data-node="1"]:not([data-component])').click();
+  await page.getByRole("button", { name: "노드 삭제", exact: true }).click();
+  await expect(anchors).toHaveCount(3);
+  await page.getByRole("button", { name: "열기 / 닫기", exact: true }).click();
+  expect(await editable.getAttribute("d")).toMatch(/[zZ]$/);
   expect(errors).toEqual([]);
   console.log(
     JSON.stringify({
@@ -71,10 +98,14 @@ try {
       undo: true,
       edit: true,
       save: true,
+      nodeEditing: true,
       rendererErrors: errors,
     }),
   );
 } finally {
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows().forEach((win) => win.destroy()),
+  );
   await app.close();
   if (
     path.dirname(path.resolve(directory)) !== path.resolve(os.tmpdir()) ||
