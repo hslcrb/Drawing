@@ -76,7 +76,6 @@ export class Tools {
     if (ev.button !== 0 && ev.button !== 1) return;
     ev.preventDefault();
     this.stage.focus();
-    this.stage.setPointerCapture(ev.pointerId);
     const p = this.coordinates(ev),
       target = ev.target as Element;
     const base = {
@@ -202,6 +201,8 @@ export class Tools {
     } catch (err) {
       this.fail(err);
       this.cancel();
+    } finally {
+      if (this.drag) this.stage.setPointerCapture(ev.pointerId);
     }
   };
   private originals() {

@@ -168,4 +168,27 @@ test("pen creates cubic path and node movement changes its shape", async ({
   await page.mouse.move(a.x + 30, a.y + 30);
   await page.mouse.up();
   expect(await path.getAttribute("d")).not.toBe(before);
+  const handle = page.locator('[data-component="handleOut"]').first();
+  const hb = (await handle.boundingBox())!;
+  const beforeHandle = await path.getAttribute("d");
+  await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hb.x + 25, hb.y + 20);
+  await page.mouse.up();
+  expect(await path.getAttribute("d")).not.toBe(beforeHandle);
+  const anchors = page.locator("[data-node]:not([data-component])");
+  await expect(anchors).toHaveCount(3);
+  const middle = await path.evaluate((element) => {
+    const path = element as SVGPathElement;
+    const p = path.getPointAtLength(path.getTotalLength() / 2),
+      m = path.getScreenCTM()!;
+    return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f };
+  });
+  await page.mouse.dblclick(middle.x, middle.y);
+  await expect(anchors).toHaveCount(4);
+  await page.locator('[data-node="1"]:not([data-component])').click();
+  await page.getByRole("button", { name: "노드 삭제", exact: true }).click();
+  await expect(anchors).toHaveCount(3);
+  await page.getByRole("button", { name: "열기 / 닫기", exact: true }).click();
+  expect(await path.getAttribute("d")).toMatch(/[zZ]$/);
 });

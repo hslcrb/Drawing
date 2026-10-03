@@ -2,7 +2,8 @@ import { chromium, expect } from "@playwright/test";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
-const executable = path.resolve("release/Drawing-1.0.0-win-x64.exe");
+const { version } = JSON.parse(await fs.readFile("package.json", "utf8"));
+const executable = path.resolve(`release/Drawing-${version}-win-x64.exe`);
 const port = 19347;
 const processHandle = spawn(executable, [`--remote-debugging-port=${port}`], {
   windowsHide: true,

@@ -1,6 +1,6 @@
 {
   "name": "drawing",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SVG-native desktop vector editor with pathfinder and transparent artwork cleanup",
   "author": "Rheehose",
   "license": "MIT",
