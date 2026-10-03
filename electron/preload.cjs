@@ -5,6 +5,10 @@ contextBridge.exposeInMainWorld("desktop", {
   newDocument: () => ipcRenderer.invoke("drawing:new"),
   save: (xml, saveAs) => ipcRenderer.invoke("drawing:save", xml, saveAs),
   export: (xml) => ipcRenderer.invoke("drawing:export", xml),
+  download: (name, base64) =>
+    ipcRenderer.invoke("drawing:download", name, base64),
+  systemFonts: () => ipcRenderer.invoke("drawing:fonts"),
+  fontData: (id) => ipcRenderer.invoke("drawing:font-data", id),
   changed: (dirty) => ipcRenderer.send("drawing:changed", dirty),
   clipboardRead: () => ipcRenderer.invoke("drawing:clipboard-read"),
   clipboardWrite: (xml) => ipcRenderer.invoke("drawing:clipboard-write", xml),

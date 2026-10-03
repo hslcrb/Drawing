@@ -76,3 +76,13 @@ JSON, unsupported versions, invalid numeric ranges, duplicate resource/track IDs
 and duplicate key times are rejected before replacing the current document.
 Opened SVGs are sanitized; scripts, external resource references and foreign
 objects are excluded. Saving uses a temporary sibling and atomic rename.
+# Identity extension (Drawing 1.2)
+
+`workspace.mode` also accepts `identity`. `resources.identity` is optional,
+so older version-1 projects remain readable without migration. It stores
+brand names, palette, gap/clear-space/minimum-width rules, source component
+records and linked variant configurations. SVG itself contains the masters,
+`symbol` definitions, `use` instances and generated lockup groups; the metadata
+records their IDs and roles. Undo/redo captures SVG and identity metadata together.
+Full schema and workflow: [drawing.schema.json](drawing.schema.json) and
+[identity-studio.md](identity-studio.md).

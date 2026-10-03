@@ -1,3 +1,4 @@
+import { validIdentity, type IdentitySystem } from "./identity-types";
 export type Keyframe = {
   time: number;
   x: number;
@@ -12,7 +13,7 @@ export type ViewState = {
   zoom: number;
   scrollX: number;
   scrollY: number;
-  mode: "design" | "motion";
+  mode: "design" | "motion" | "identity";
   tool: string;
   selection: string[];
   expanded: string[];
@@ -34,6 +35,7 @@ export type EmbeddedFont = {
   bytes: number;
 };
 export type ProjectData = {
+  identity?: IdentitySystem;
   assets: Asset[];
   fonts: EmbeddedFont[];
   motion: { duration: number; fps: number; loop: boolean; tracks: Track[] };
@@ -92,6 +94,7 @@ export function validateProject(value: unknown): ProjectFile {
     return fail();
   const r = p.resources,
     v = p.workspace;
+  if (r?.identity !== undefined && !validIdentity(r.identity)) return fail();
   if (
     v &&
     ((v.inspectorScroll !== undefined && !finite(v.inspectorScroll, 0, 1e7)) ||
@@ -112,7 +115,7 @@ export function validateProject(value: unknown): ProjectFile {
     !finite(v.zoom, 0.05, 8) ||
     !finite(v.scrollX, 0, 1e7) ||
     !finite(v.scrollY, 0, 1e7) ||
-    !["design", "motion"].includes(v.mode) ||
+    !["design", "motion", "identity"].includes(v.mode) ||
     ![
       "select",
       "node",

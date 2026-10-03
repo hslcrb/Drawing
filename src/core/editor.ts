@@ -1,5 +1,6 @@
 import paperCore from "paper/dist/paper-core";
 import type paper from "paper";
+import { syncIdentity } from "./identity";
 import {
   emptyProject,
   defaultView,
@@ -232,6 +233,7 @@ export class SvgEditor {
   }
   commit(label = "편집") {
     if (!this.pending) return;
+    syncIdentity(this);
     const before = this.pending;
     this.pending = null;
     const after = this.snapshot();
@@ -474,7 +476,7 @@ export class SvgEditor {
         .forEach((el) => (el.textContent = text)),
     );
   }
-  private cloneNodes(nodes: SVGGraphicsElement[]) {
+  cloneNodes(nodes: SVGGraphicsElement[]) {
     const clones = nodes.map((el) => el.cloneNode(true) as SVGGraphicsElement);
     const map = new Map<string, string>();
     for (const clone of clones)
