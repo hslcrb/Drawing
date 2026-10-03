@@ -145,7 +145,10 @@ npm run format           # 소스 포맷
 - `src/core/project.ts`: 공개 프로젝트 타입과 로드 검증.
 - `src/core/paints.ts`, `assets.ts`, `fonts.ts`: 편집 가능한 색상 필드와 내장 리소스.
 - `src/core/motion.ts`, `Timeline.tsx`: 보간·키프레임·SVG 미리보기와 애니메이션 내보내기.
-- `src/examples.ts`, `samples/`: 다섯 편집 가능한 예제.
+- `src/core/identity.ts`, `BrandPanel.tsx`: 상징 컴포넌트·조합 매트릭스·SVG ZIP.
+- `src/core/retypo.ts`, `RetypoDialog.tsx`: 폰트 글리프 보고·윤곽 비교·텍스트 복원.
+- `src/ContextMenu.tsx`: 앱 전체의 우클릭 작업 메뉴.
+- `src/examples.ts`, `samples/`: 여섯 편집 가능한 예제.
 - `src/main.tsx`: 도구·속성·레이어·파일 UI와 키보드 동작.
 - `electron/`: 제한된 preload 브리지, 파일 I/O, 네이티브 대화상자와 클립보드.
 - `tests/`: 문서·기하·브라우저 상호작용·데스크톱 파일 검증.
