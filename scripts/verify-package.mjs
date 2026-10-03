@@ -7,7 +7,7 @@ const executable = path.resolve(
   process.argv[2] || "release/win-unpacked/Drawing.exe",
 );
 const directory = await fs.mkdtemp(path.join(os.tmpdir(), "drawing-package-"));
-const savedPath = path.join(directory, "packaged.svg");
+const savedPath = path.join(directory, "packaged.drawing");
 const app = await electron.launch({
   executablePath: executable,
   timeout: 60000,
@@ -20,7 +20,7 @@ try {
     page.getByRole("button", { name: "SVG 열기", exact: true }),
   ).toBeVisible();
   await expect(page.getByTestId("artboard")).toContainText("Make something");
-  await expect(page.locator(".doc-tab")).toContainText("Welcome.svg");
+  await expect(page.locator(".doc-tab")).toContainText("Welcome.drawing");
   const sample = path.resolve("samples/welcome.svg");
   await app.evaluate(({ dialog }, target) => {
     dialog.showOpenDialog = async () => ({
@@ -58,7 +58,7 @@ try {
     dialog.showSaveDialog = async () => ({ canceled: false, filePath: target });
   }, savedPath);
   await page.keyboard.press("Control+Shift+s");
-  await expect(page.locator(".doc-tab")).toContainText("packaged.svg");
+  await expect(page.locator(".doc-tab")).toContainText("packaged.drawing");
   const output = await fs.readFile(savedPath, "utf8");
   expect(output).toContain("linearGradient");
   expect(output).not.toContain("data-testid");

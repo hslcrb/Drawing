@@ -12,23 +12,32 @@ let win,
   currentPath = null,
   dirty = false,
   forceClose = false;
-const filters = [{ name: "SVG vector document", extensions: ["svg"] }];
+const filters = [
+  { name: "Drawing project", extensions: ["drawing"] },
+  { name: "SVG vector document", extensions: ["svg"] },
+];
 function sender(event) {
   if (event.sender !== win?.webContents) throw new Error("Invalid sender");
 }
 async function writeSvg(xml, saveAs = false, exportOnly = false) {
-  if (typeof xml !== "string" || xml.length > 50 * 1024 * 1024)
+  if (
+    typeof xml !== "string" ||
+    Buffer.byteLength(xml, "utf8") > 150 * 1024 * 1024
+  )
     throw new Error("SVG file is too large or invalid.");
   let target = exportOnly || saveAs ? null : currentPath;
   if (!target) {
     const choice = await dialog.showSaveDialog(win, {
-      title: exportOnly ? "SVG 내보내기" : "SVG 저장",
-      defaultPath: currentPath || "Untitled.svg",
-      filters,
+      title: exportOnly ? "SVG 내보내기" : "프로젝트 저장",
+      defaultPath: exportOnly
+        ? "Untitled.svg"
+        : currentPath || "Untitled.drawing",
+      filters: exportOnly ? [filters[1]] : [filters[0]],
     });
     if (choice.canceled || !choice.filePath) return null;
     target = choice.filePath;
-    if (!/\.svg$/i.test(target)) target += ".svg";
+    if (!(exportOnly ? /\.svg$/i : /\.drawing$/i).test(target))
+      target += exportOnly ? ".svg" : ".drawing";
   }
   const temporary = target + `.drawing-${process.pid}.tmp`;
   try {
@@ -47,21 +56,21 @@ async function writeSvg(xml, saveAs = false, exportOnly = false) {
 ipcMain.handle("drawing:open", async (event) => {
   sender(event);
   const choice = await dialog.showOpenDialog(win, {
-    title: "SVG 열기",
+    title: "프로젝트 / SVG 열기",
     filters,
     properties: ["openFile"],
   });
   if (choice.canceled) return null;
   const target = choice.filePaths[0];
   const stat = await fs.stat(target);
-  if (stat.size > 50 * 1024 * 1024)
-    throw new Error("SVG 파일은 50MB 이하만 열 수 있습니다.");
+  if (stat.size > 150 * 1024 * 1024)
+    throw new Error("프로젝트 파일은 150MB 이하만 열 수 있습니다.");
   const xml = await fs.readFile(target, "utf8");
   return { xml, path: target };
 });
 ipcMain.handle("drawing:opened", (event, filePath) => {
   sender(event);
-  currentPath = filePath;
+  currentPath = /\.drawing$/i.test(filePath) ? filePath : null;
 });
 ipcMain.handle("drawing:new", (event) => {
   sender(event);

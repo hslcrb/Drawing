@@ -8,7 +8,7 @@ test("bundled welcome artwork opens at startup and can always be restored", asyn
   await expect(board.locator("text")).toHaveCount(7);
   await expect(board).toContainText("Make something");
   await expect(board).toContainText("wonderfully yours.");
-  await expect(page.locator(".doc-tab")).toContainText("Welcome.svg");
+  await expect(page.locator(".doc-tab")).toContainText("Welcome.drawing");
   const artwork = () =>
     board.evaluate((element) => {
       const copy = element.cloneNode(true) as Element;
