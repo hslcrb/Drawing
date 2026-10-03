@@ -173,9 +173,12 @@ function App() {
     [zoom, setZoom] = useState(0.8),
     [filename, setFilename] = useState("Untitled.svg"),
     [error, setError] = useState("");
-  const [modal, setModal] = useState<"new" | "text" | "help" | null>(null),
+  const [modal, setModal] = useState<"new" | "text" | "rename" | "help" | null>(
+      null,
+    ),
     [text, setText] = useState("Drawing"),
     [textPoint, setTextPoint] = useState<Vec | null>(null),
+    [renameId, setRenameId] = useState(""),
     [width, setWidth] = useState(960),
     [height, setHeight] = useState(640),
     [fill, setFill] = useState("#8b75ff"),
@@ -510,11 +513,9 @@ function App() {
               e.select([el.id], ev.shiftKey);
             }}
             onDoubleClick={() => {
-              const name = window.prompt(
-                "객체 이름",
-                el.getAttribute("data-name") || "",
-              );
-              if (name) run(() => e!.setName(el, name));
+              setRenameId(el.id);
+              setText(el.getAttribute("data-name") || name);
+              setModal("rename");
             }}
           >
             <span
@@ -1156,6 +1157,31 @@ function App() {
                   }}
                 >
                   추가
+                </button>
+              </>
+            ) : modal === "rename" ? (
+              <>
+                <span className="eyebrow">ORGANIZE YOUR ARTWORK</span>
+                <h1>레이어 이름 변경</h1>
+                <input
+                  autoFocus
+                  aria-label="레이어 이름"
+                  value={text}
+                  onChange={(event) => setText(event.target.value)}
+                />
+                <button
+                  className="primary"
+                  style={{ marginTop: 24 }}
+                  onClick={() => {
+                    const el = engine.current!.svg.querySelector(
+                      `[id="${CSS.escape(renameId)}"]`,
+                    );
+                    if (el && text.trim())
+                      run(() => engine.current!.setName(el, text.trim()));
+                    setModal(null);
+                  }}
+                >
+                  이름 변경
                 </button>
               </>
             ) : (
