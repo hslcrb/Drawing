@@ -2,12 +2,14 @@ import { expect } from "@playwright/test";
 export async function verifyBrand(page) {
   const errors = [];
   page.on("pageerror", (err) => errors.push(err.message));
-  page.once("dialog", (dialog) => dialog.accept());
+  const discard = (dialog) => dialog.accept();
+  page.once("dialog", discard);
   await page.getByRole("button", { name: "예제 열기", exact: true }).click();
   await page
     .getByRole("button", { name: "예제 identity", exact: true })
     .click();
   await expect(page.getByTestId("brand-panel")).toBeVisible();
+  page.off("dialog", discard);
   const board = page.getByTestId("artboard");
   await expect(board.locator("g[data-brand-variant]")).toHaveCount(6);
   await page
