@@ -49,6 +49,8 @@ import { Tools, type Tool } from "./core/tools";
 import "./style.css";
 import welcomeSvg from "../samples/welcome.svg?raw";
 import { defaultView, type ViewState } from "./core/project";
+import { PaintEditor, GradientHandles } from "./PaintEditor";
+import { ResourcePanel } from "./ResourcePanel";
 
 const toolList: {
   id: Tool;
@@ -189,6 +191,9 @@ function App() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [mode, setMode] = useState<"design" | "motion">("design");
   const [time, setTime] = useState(0);
+  const [paintHandles, setPaintHandles] = useState<"fill" | "stroke" | null>(
+    null,
+  );
   const workspace = useRef<ViewState>(defaultView());
   workspace.current = {
     zoom,
@@ -750,6 +755,14 @@ function App() {
               >
                 <div className="document-host" ref={host} />
                 <svg ref={overlay} className="overlay" />
+                {e && paintHandles && (
+                  <GradientHandles
+                    editor={e}
+                    property={paintHandles}
+                    zoom={zoom}
+                    run={run}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -917,6 +930,91 @@ function App() {
               </>
             )}
           </section>
+          {e && sel.length > 0 && (
+            <>
+              <section>
+                <h2>
+                  스트로크 <span>STROKE</span>
+                </h2>
+                <div className="field-grid">
+                  {(
+                    [
+                      [
+                        "stroke-linecap",
+                        "끝 모양",
+                        ["butt", "round", "square"],
+                      ],
+                      [
+                        "stroke-linejoin",
+                        "모서리",
+                        ["miter", "round", "bevel"],
+                      ],
+                    ] as const
+                  ).map(([property, label, options]) => (
+                    <label className="field" key={property}>
+                      <span>{label}</span>
+                      <select
+                        aria-label={label}
+                        value={common(property)}
+                        onChange={(ev) =>
+                          run(() => e.setStyle(property, ev.target.value))
+                        }
+                      >
+                        {options.map((v) => (
+                          <option key={v} value={v}>
+                            {v}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                  <Field
+                    label="대시 배열"
+                    value={common("stroke-dasharray")}
+                    onCommit={(v) =>
+                      run(() => e.setStyle("stroke-dasharray", v))
+                    }
+                  />
+                  <Field
+                    label="대시 오프셋"
+                    value={common("stroke-dashoffset")}
+                    onCommit={(v) =>
+                      run(() => e.setStyle("stroke-dashoffset", v))
+                    }
+                  />
+                  <Field
+                    label="마이터 한계"
+                    value={common("stroke-miterlimit")}
+                    onCommit={(v) =>
+                      run(() => e.setStyle("stroke-miterlimit", v))
+                    }
+                  />
+                </div>
+                <label className="check-row">
+                  <input
+                    type="checkbox"
+                    checked={common("vector-effect") === "non-scaling-stroke"}
+                    onChange={(ev) =>
+                      run(() =>
+                        e.setStyle(
+                          "vector-effect",
+                          ev.target.checked ? "non-scaling-stroke" : "none",
+                        ),
+                      )
+                    }
+                  />
+                  확대해도 선 두께 유지
+                </label>
+              </section>
+              <PaintEditor
+                editor={e}
+                revision={revision}
+                active={paintHandles}
+                onActive={setPaintHandles}
+                run={run}
+              />
+            </>
+          )}
           <section>
             <h2>
               패스파인더 <span>PATHFINDER</span>
@@ -1064,6 +1162,7 @@ function App() {
               </Button>
             </div>
           </section>
+          {e && <ResourcePanel editor={e} run={run} asyncRun={asyncRun} />}
           <section className="layers">
             <h2>
               <Layers size={15} />

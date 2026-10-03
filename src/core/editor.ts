@@ -26,6 +26,10 @@ const paintProperties = [
   "fill-rule",
   "stroke-linecap",
   "stroke-linejoin",
+  "stroke-dasharray",
+  "stroke-dashoffset",
+  "stroke-miterlimit",
+  "vector-effect",
   "font-size",
   "font-family",
   "font-weight",
@@ -141,7 +145,9 @@ export class SvgEditor {
         el.textContent = (el.textContent || "")
           .replace(/@import[^;]+;?/gi, "")
           .replace(/url\([^)]*\)/gi, (m) =>
-            /^url\(\s*['"]?#/.test(m) ? m : "none",
+            /^url\(\s*['"]?(#|data:font\/(ttf|otf);base64,)/i.test(m)
+              ? m
+              : "none",
           );
     }
     this.mount(svg);
