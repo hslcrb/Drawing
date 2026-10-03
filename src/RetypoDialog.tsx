@@ -311,6 +311,7 @@ export default function RetypoDialog({
                 editor.freshId(),
               );
               replaceWithText(editor, font!, embedded, text, result!);
+              await document.fonts.load(`80px "${embedded.family}"`, text);
               close();
             })
           }

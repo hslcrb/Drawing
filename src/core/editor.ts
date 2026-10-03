@@ -473,7 +473,17 @@ export class SvgEditor {
     this.command("텍스트 변경", () =>
       this.selected
         .filter((el) => el.localName === "text")
-        .forEach((el) => (el.textContent = text)),
+        .forEach((el) => {
+          el.textContent = text;
+          if (el.hasAttribute("data-brand-auto")) {
+            const brand = this.project.identity;
+            const role = brand?.components.find(
+              (c) => c.sourceId === el.id,
+            )?.role;
+            if (brand && role === "logotype-ko") brand.ko = text;
+            if (brand && role === "logotype-en") brand.en = text;
+          }
+        }),
     );
   }
   cloneNodes(nodes: SVGGraphicsElement[]) {

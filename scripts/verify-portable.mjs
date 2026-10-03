@@ -2,6 +2,7 @@ import { chromium, expect } from "@playwright/test";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { verifyBrand } from "./verify-brand.mjs";
 const { version } = JSON.parse(await fs.readFile("package.json", "utf8"));
 const executable = path.resolve(`release/Drawing-${version}-win-x64.exe`);
 const port = 19347;
@@ -102,6 +103,15 @@ try {
   await page
     .getByRole("button", { name: "모션 일시정지", exact: true })
     .click();
+  const brand = await verifyBrand(page);
+  await fs.writeFile(
+    "release/brand-verification.json",
+    JSON.stringify({ executable, ...brand }, null, 2),
+  );
+  console.log(JSON.stringify({ portableExecutable: executable, ...brand }));
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "새 문서", exact: true }).click();
+  await page.getByRole("button", { name: "만들기", exact: true }).click();
   await page.close();
 } finally {
   await browser.close();

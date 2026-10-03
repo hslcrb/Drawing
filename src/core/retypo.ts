@@ -157,13 +157,28 @@ export async function recognizeOutlines(
       ].filter((c) => font.hasChar(c) && !/^\s$/.test(c));
     if (!chars.length || chars.length > 4096)
       throw new Error("비교할 문자를 1~4096개 지정하세요.");
-    const targets = groups.map((paths) => {
-      const cp = new e.scope.CompoundPath({
-        children: paths.map((p) => p.clone({ insert: false })),
-        insert: false,
-      });
-      return cp;
-    });
+    // Hangul and other glyphs can have horizontally disconnected components.
+    // Compare short runs of contours, then find the best complete segmentation.
+    const targets: paper.CompoundPath[] = [],
+      spans: { start: number; end: number }[] = [];
+    for (let start = 0; start < groups.length; start++)
+      for (
+        let end = start + 1;
+        end <= Math.min(groups.length, start + 4);
+        end++
+      ) {
+        const paths = groups.slice(start, end).flat(),
+          cp = new e.scope.CompoundPath({
+            children: paths.map((p) => p.clone({ insert: false })),
+            insert: false,
+          });
+        if (end > start + 1 && cp.bounds.width / cp.bounds.height > 1.65) {
+          cp.remove();
+          break;
+        }
+        targets.push(cp);
+        spans.push({ start, end });
+      }
     const signatures = targets.map(signature),
       candidates: { char: string; score: number }[][] = targets.map(() => []);
     try {
@@ -193,33 +208,54 @@ export async function recognizeOutlines(
           await new Promise((resolve) => setTimeout(resolve, 0));
         }
       }
-      const box = targets.reduce(
+      const costs = Array(groups.length + 1).fill(Infinity) as number[],
+        previous = Array(groups.length + 1).fill(-1) as number[];
+      costs[0] = 0;
+      for (let start = 0; start < groups.length; start++)
+        for (let i = 0; i < spans.length; i++)
+          if (spans[i].start === start) {
+            const score = candidates[i][0]?.score || 0,
+              cost = costs[start] + 0.025 + (1 - score);
+            if (cost < costs[spans[i].end]) {
+              costs[spans[i].end] = cost;
+              previous[spans[i].end] = i;
+            }
+          }
+      const chosen: number[] = [];
+      for (let end = groups.length; end > 0;) {
+        const i = previous[end];
+        if (i < 0) throw new Error("글자 윤곽을 분리할 수 없습니다.");
+        chosen.unshift(i);
+        end = spans[i].start;
+      }
+      const matched = chosen.map((i) => targets[i]),
+        ranked = chosen.map((i) => candidates[i]);
+      const box = matched.reduce(
         (b, p) => (b ? b.unite(p.bounds) : p.bounds.clone()),
         null as paper.Rectangle | null,
       )!;
-      const sizes = candidates.map((list, i) => {
+      const sizes = ranked.map((list, i) => {
         const p = font
           .getPath(list[0]?.char || "?", 0, 0, 100)
           .getBoundingBox();
-        return (targets[i].bounds.height / Math.max(0.001, p.y2 - p.y1)) * 100;
+        return (matched[i].bounds.height / Math.max(0.001, p.y2 - p.y1)) * 100;
       });
       const typical = sizes.sort((a, b) => a - b)[Math.floor(sizes.length / 2)];
       let text = "";
-      for (let i = 0; i < candidates.length; i++) {
+      for (let i = 0; i < ranked.length; i++) {
         if (
           i &&
-          targets[i].bounds.left - targets[i - 1].bounds.right > typical * 0.25
+          matched[i].bounds.left - matched[i - 1].bounds.right > typical * 0.25
         )
           text += " ";
-        text += candidates[i][0]?.char || "?";
+        text += ranked[i][0]?.char || "?";
       }
       onProgress(1);
       return {
         text,
         score:
-          candidates.reduce((n, c) => n + (c[0]?.score || 0), 0) /
-          candidates.length,
-        candidates,
+          ranked.reduce((n, c) => n + (c[0]?.score || 0), 0) / ranked.length,
+        candidates: ranked,
         bounds: { x: box.x, y: box.y, width: box.width, height: box.height },
         matrix,
         sourceIds: selected.map((el) => el.id),
