@@ -47,6 +47,7 @@ import {
 import { SvgEditor, type Vec } from "./core/editor";
 import { Tools, type Tool } from "./core/tools";
 import "./style.css";
+import welcomeSvg from "../samples/welcome.svg?raw";
 
 const toolList: {
   id: Tool;
@@ -171,7 +172,7 @@ function App() {
   const [revision, update] = useState(0),
     [tool, setTool] = useState<Tool>("select"),
     [zoom, setZoom] = useState(0.8),
-    [filename, setFilename] = useState("Untitled.svg"),
+    [filename, setFilename] = useState("Welcome.svg"),
     [error, setError] = useState("");
   const [modal, setModal] = useState<"new" | "text" | "rename" | "help" | null>(
       null,
@@ -264,6 +265,15 @@ function App() {
       }
     } else fileInput.current?.click();
   }
+  async function openExample() {
+    controller.current?.finishPen();
+    if (!(await guard())) return;
+    controller.current?.cancel();
+    engine.current!.load(welcomeSvg);
+    await window.desktop?.newDocument();
+    setFilename("Welcome.svg");
+    requestAnimationFrame(fit);
+  }
   async function copy(cut = false) {
     const ed = engine.current!;
     if (!ed.selected.length) return;
@@ -302,7 +312,7 @@ function App() {
       setText("Drawing");
       setModal("text");
     };
-    ed.emit();
+    ed.load(welcomeSvg);
     requestAnimationFrame(fit);
     const beforeUnload = (ev: BeforeUnloadEvent) => {
       if (ed.dirty && !window.desktop) {
@@ -555,6 +565,13 @@ function App() {
           Drawing<span className="version">SVG STUDIO</span>
         </a>
         <div className="header-actions">
+          <Button
+            label="예제 열기"
+            icon={Sparkles}
+            onClick={() => void asyncRun(openExample)}
+          >
+            예제
+          </Button>
           <Button label="새 문서" icon={Plus} onClick={() => setModal("new")}>
             새 문서
           </Button>

@@ -7,6 +7,8 @@ test("Electron layer names can be edited in the application dialog", async () =>
   const app = await electron.launch({ args: ["."] });
   try {
     const page = await app.firstWindow();
+    await page.getByRole("button", { name: "새 문서", exact: true }).click();
+    await page.getByRole("button", { name: "만들기", exact: true }).click();
     await page.getByRole("button", { name: "사각형 (R)", exact: true }).click();
     const b = (await page.getByTestId("artboard").boundingBox())!;
     await page.mouse.move(b.x + 80, b.y + 80);
@@ -44,6 +46,8 @@ test("Electron edits, saves, reopens SVG and resets save path for a new document
   const app = await electron.launch({ args: ["."] });
   try {
     const page = await app.firstWindow();
+    await page.getByRole("button", { name: "새 문서", exact: true }).click();
+    await page.getByRole("button", { name: "만들기", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "새 문서", exact: true }),
     ).toBeVisible();
@@ -87,6 +91,18 @@ test("Electron edits, saves, reopens SVG and resets save path for a new document
     await page.getByRole("button", { name: "SVG 열기", exact: true }).click();
     await expect(board.locator("rect")).toHaveCount(1);
     await expect(page.locator(".doc-tab")).toContainText("drawing.svg");
+    await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+    await expect(board.locator("text")).toHaveCount(7);
+    await app.evaluate(({ dialog }, target) => {
+      dialog.showSaveDialog = async () => ({
+        canceled: false,
+        filePath: target,
+      });
+    }, secondPath);
+    await page.getByRole("button", { name: "저장", exact: true }).click();
+    await expect(page.locator(".doc-tab")).toContainText("new.svg");
+    expect(await fs.readFile(savedPath, "utf8")).toBe(xml);
+    expect(await fs.readFile(secondPath, "utf8")).toContain("Make something");
     await page.screenshot({ path: "test-results/desktop.png" });
   } finally {
     await app.close();

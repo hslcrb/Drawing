@@ -9,12 +9,15 @@ Drawing은 SVG 문서를 직접 편집하는 데스크톱 벡터 편집기입니
 
 ## 실행
 
-[Releases](https://github.com/hslcrb/Drawing/releases)에서 `Drawing-1.0.1-win-x64.exe`를
-다운로드하고 실행하세요. 최신 검증 버전은 **1.0.1**입니다. 설치와 Java 런타임 없이 실행하는 Windows x64 포터블 앱입니다.
+[Releases](https://github.com/hslcrb/Drawing/releases)에서 `Drawing-1.0.2-win-x64.exe`를
+다운로드하고 실행하세요. 최신 검증 버전은 **1.0.2**입니다. 설치와 Java 런타임 없이 실행하는 Windows x64 포터블 앱입니다.
 현재 배포 파일은 코드 서명이 없는 자체 빌드입니다.
 
-도구로 빈 아트보드에 그리거나 **열기**로 기존 SVG를 불러오세요.
-[samples/welcome.svg](samples/welcome.svg)를 열어 곡선·텍스트·그룹·그라디언트를 체험할 수 있습니다.
+실행하면 **“Make something wonderfully yours.”** 예제 문서가 열립니다.
+상단 **예제** 버튼으로 언제든 원본을 다시 열어 곡선·텍스트·그룹·그라디언트를 체험하세요.
+예제는 앱에 포함되어 별도 파일이 필요 없습니다. **새 문서**는 빈 아트보드를 만듭니다.
+수정한 문서를 떠날 때는 저장 여부를 확인하며, 예제를 저장하면 새 파일로 저장합니다.
+원본 SVG는 [samples/welcome.svg](samples/welcome.svg)에서도 확인할 수 있습니다.
 
 ## 주요 기능
 

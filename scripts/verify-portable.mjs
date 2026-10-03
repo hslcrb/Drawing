@@ -29,6 +29,14 @@ try {
   ).toBeVisible();
   const board = page.getByTestId("artboard");
   await expect(board).toBeVisible();
+  await expect(board.locator("text")).toContainText([
+    "DRAWING / VECTOR PLAYGROUND",
+    "Make something",
+    "wonderfully yours.",
+  ]);
+  await page.screenshot({ path: "docs/preview.png" });
+  await page.getByRole("button", { name: "새 문서", exact: true }).click();
+  await page.getByRole("button", { name: "만들기", exact: true }).click();
   await page.getByRole("button", { name: "사각형 (R)", exact: true }).click();
   const b = await board.boundingBox();
   await page.mouse.move(b.x + 80, b.y + 80);
@@ -65,6 +73,8 @@ try {
       undo: true,
     }),
   );
+  await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await expect(board.locator("text")).toHaveCount(7);
   await page.close();
 } finally {
   await browser.close();

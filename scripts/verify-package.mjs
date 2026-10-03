@@ -19,6 +19,8 @@ try {
   await expect(
     page.getByRole("button", { name: "SVG 열기", exact: true }),
   ).toBeVisible();
+  await expect(page.getByTestId("artboard")).toContainText("Make something");
+  await expect(page.locator(".doc-tab")).toContainText("Welcome.svg");
   const sample = path.resolve("samples/welcome.svg");
   await app.evaluate(({ dialog }, target) => {
     dialog.showOpenDialog = async () => ({

@@ -1,11 +1,11 @@
-# Drawing 1.0.1 verification
+# Drawing 1.0.2 verification
 
 Date: 2026-10-04 (Asia/Seoul). Platform: Windows x64.
 
 ## Automated checks
 
-`npm test` completed successfully: TypeScript check, Vite production build and
-**21 Playwright tests passed**. Tests use real Chromium and Electron.
+`npm run build` and `npx playwright test` completed successfully: TypeScript check, Vite production build and
+**22 Playwright tests passed**. Tests use real Chromium and Electron.
 
 | Requirement | Evidence |
 | --- | --- |
@@ -17,6 +17,7 @@ Date: 2026-10-04 (Asia/Seoul). Platform: Windows x64.
 | Common editing | Group/ungroup, preserved coordinates, alignment/distribution, native clipboard, undo/redo and draft cancellation |
 | Layer editing | Actual Electron in-app rename dialog; sample group selected through layer panel |
 | Desktop files | Real IPC, file writes, file reopen, new-document save-path reset; only path selection in native dialog is controlled |
+| Bundled welcome example | Startup artwork, restore original after edits, cancel unsaved discard, blank new documents and example save-path reset |
 | Windows EXE | electron-builder portable x64 build; actual packaged application and portable wrapper launched and edited |
 
 ## Packaged application checks
@@ -27,15 +28,15 @@ editing, actual SVG saving, node insertion/deletion and path closure. No rendere
 sample is captured in `docs/preview.png`.
 
 `node scripts/verify-portable.mjs` passed on the actual distribution file
-`release/Drawing-1.0.1-win-x64.exe`: window display, rectangle drawing, Alt-drag
-duplication and undo. Product metadata reports **Drawing 1.0.1**.
+`release/Drawing-1.0.2-win-x64.exe`: bundled startup artwork, blank new document, rectangle drawing, Alt-drag
+duplication, undo and reopening the bundled original. Product metadata reports **Drawing 1.0.2**.
 
-Distribution bytes: **142772750**.
+Distribution bytes: **142773746**.
 
 SHA-256:
 
 ```text
-9cff31cdd7340c88823ca147334882d3c3b1fe399a3b2d71e6d1b27e561720e6
+f8e0990fb446f1d3b1224dea1cb0567d15f19ebdb37faa4ce635daeb5d8b59d7
 ```
 
 ## External check limitation

@@ -1,9 +1,57 @@
 import { test, expect } from "@playwright/test";
 
+test("bundled welcome artwork opens at startup and can always be restored", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const board = page.getByTestId("artboard");
+  await expect(board.locator("text")).toHaveCount(7);
+  await expect(board).toContainText("Make something");
+  await expect(board).toContainText("wonderfully yours.");
+  await expect(page.locator(".doc-tab")).toContainText("Welcome.svg");
+  const artwork = () =>
+    board.evaluate((element) => {
+      const copy = element.cloneNode(true) as Element;
+      copy.querySelectorAll("[id]").forEach((node) => {
+        if (node.id.startsWith("drawing-")) node.removeAttribute("id");
+      });
+      return copy.innerHTML;
+    });
+  const original = await artwork();
+  await page.getByRole("button", { name: "새 문서", exact: true }).click();
+  await page.getByRole("button", { name: "만들기", exact: true }).click();
+  await expect(board.locator("text")).toHaveCount(0);
+  await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await expect(board.locator("text")).toHaveCount(7);
+  expect(await artwork()).toBe(original);
+  await page.getByRole("button", { name: "타이포그래피", exact: true }).click();
+  await page.keyboard.press("Delete");
+  await expect(board.locator("text")).toHaveCount(3);
+  let dismissed = 0;
+  page.on("dialog", async (dialog) => {
+    await dialog.dismiss();
+    dismissed++;
+  });
+  await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await expect.poll(() => dismissed).toBe(2);
+  await expect(board.locator("text")).toHaveCount(3);
+  page.removeAllListeners("dialog");
+  page.on("dialog", (dialog) =>
+    dialog.message().includes("버리고 계속")
+      ? dialog.accept()
+      : dialog.dismiss(),
+  );
+  await page.getByRole("button", { name: "예제 열기", exact: true }).click();
+  await expect(board.locator("text")).toHaveCount(7);
+  expect(await artwork()).toBe(original);
+});
+
 test("Escape cancels a draft property without changing artwork", async ({
   page,
 }) => {
   await page.goto("/");
+  await page.getByRole("button", { name: "새 문서", exact: true }).click();
+  await page.getByRole("button", { name: "만들기", exact: true }).click();
   const board = page.getByTestId("artboard");
   const b = (await board.boundingBox())!;
   await page.getByRole("button", { name: "사각형 (R)", exact: true }).click();
@@ -22,6 +70,8 @@ test("ellipse and text tools, selection resize handles, numeric styles and group
   page,
 }) => {
   await page.goto("/");
+  await page.getByRole("button", { name: "새 문서", exact: true }).click();
+  await page.getByRole("button", { name: "만들기", exact: true }).click();
   const board = page.getByTestId("artboard");
   const b = (await board.boundingBox())!;
   await page.getByRole("button", { name: "타원 (E)", exact: true }).click();
@@ -80,6 +130,8 @@ test("transparent cleanup UI preserves painted strokes and undo restores removed
   page,
 }) => {
   await page.goto("/");
+  await page.getByRole("button", { name: "새 문서", exact: true }).click();
+  await page.getByRole("button", { name: "만들기", exact: true }).click();
   const canvas = page.getByTestId("artboard");
   const b = (await canvas.boundingBox())!;
   await page.getByRole("button", { name: "사각형 (R)", exact: true }).click();
