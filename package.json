@@ -1,0 +1,59 @@
+{
+  "name": "drawing",
+  "version": "1.0.0",
+  "description": "SVG-native desktop vector editor with pathfinder and transparent artwork cleanup",
+  "author": "Rheehose",
+  "license": "MIT",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "desktop": "npm run build && electron .",
+    "build": "tsc --noEmit && vite build",
+    "test": "npm run build && playwright test",
+    "format": "prettier --write src electron tests *.ts *.json index.html",
+    "package": "npm run build && electron-builder --win portable --x64",
+    "package:dir": "npm run build && electron-builder --win --dir --x64"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "paper": "^0.12.18",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "electron": "^41.0.0",
+    "electron-builder": "^26.0.12",
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.0"
+  },
+  "build": {
+    "appId": "io.github.hslcrb.drawing",
+    "productName": "Drawing",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!node_modules/**"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "signAndEditExecutable": true,
+      "icon": "assets/icon.ico"
+    },
+    "portable": {
+      "artifactName": "Drawing-${version}-win-x64.exe"
+    }
+  }
+}
